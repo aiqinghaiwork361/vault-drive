@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · VaultDrive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Sora:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* === v20260817: Pure Black Admin === */
+:root {
+  --bg: #000000;
+  --bg-deep: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-card: #121212;
+  --bg-card-hover: #1a1a1a;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --bg-glass: rgba(0, 0, 0, 0.82);
+
+  --green: #2dd4bf;
+  --green-dim: #14b8a6;
+  --green-glow: rgba(45, 212, 191, 0.28);
+  --amber: #e5e7eb;
+  --amber-dim: #9ca3af;
+  --amber-glow: rgba(229, 231, 235, 0.12);
+  --red: #f87171;
+  --red-dim: #ef4444;
+
+  --blue: var(--green);
+  --purple: #94a3b8;
+  --pink: #94a3b8;
+  --blue-glow: var(--green-glow);
+  --purple-glow: var(--amber-glow);
+  --gradient: linear-gradient(135deg, #2dd4bf, #64748b);
+
+  --accent-primary: var(--green);
+  --accent-secondary: var(--amber);
+  --accent-green: var(--green);
+  --accent-red: var(--red);
+  --accent-purple: var(--purple);
+  --accent-gold: #fbbf24;
+
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --text: #f5f5f5;
+  --text-dim: #a3a3a3;
+  --text-dimmer: #737373;
+
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.16);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --font-display: 'Fraunces', 'Noto Sans SC', Georgia, serif;
+  --font-mono: 'Sora', 'Noto Sans SC', sans-serif;
+  --font-body: 'Sora', 'Noto Sans SC', sans-serif;
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-hover: 0 2px 0 rgba(255, 255, 255, 0.04), 0 20px 48px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 0 3px rgba(45, 212, 191, 0.22);
+  --shadow-glow-purple: 0 0 0 3px rgba(148, 163, 184, 0.16);
+
+  --header-h: 56px;
+  --sidebar-w: 220px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--font-body) !important;
+  background: var(--bg) !important;
+  color: var(--text-primary) !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgba(45, 212, 191, 0.28); color: var(--text-primary); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+
+a { color: var(--green) !important; text-decoration: none !important; text-shadow: none !important; }
+a:hover { color: var(--green-dim) !important; }
+button, .btn {
+  font-family: var(--font-body) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+input, select, textarea {
+  font-family: var(--font-body) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 8px 12px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--green) !important;
+  box-shadow: var(--shadow-glow) !important;
+}
+
+.app { display: flex; min-height: 100vh; }
+.side {
+  width: var(--sidebar-w);
+  background: var(--bg-surface) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body) !important;
+}
+.side-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 16px;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  margin-bottom: 14px;
+}
+.side-logo .ico {
+  width: 28px; height: 28px;
+  background: var(--green);
+  border-radius: 8px;
+  display: grid; place-items: center;
+  font-size: 12px; color: #000; font-weight: 700;
+}
+.side-logo .txt {
+  font-family: var(--font-display) !important;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+  letter-spacing: -0.02em;
+}
+.side-logo .txt::before { content: none !important; }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 2px 0;
+}
+.nav:hover, .nav.active {
+  background: rgba(45, 212, 191, 0.12) !important;
+  color: var(--green) !important;
+  border-left: none !important;
+  box-shadow: none !important;
+}
+.nav.active::before { content: none !important; }
+.nav .ic { width: 18px; text-align: center; opacity: 0.7; }
+
+.main {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+  background: transparent !important;
+  font-family: var(--font-body) !important;
+}
+.hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  padding-bottom: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.hdr h1 {
+  font-family: var(--font-display) !important;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+  letter-spacing: -0.02em;
+}
+.hdr h1::before { content: none !important; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.btn-p {
+  background: var(--green) !important;
+  color: #000 !important;
+  border: 1px solid var(--green) !important;
+  box-shadow: none !important;
+}
+.btn-p:hover { background: var(--green-dim) !important; }
+.btn-g {
+  background: var(--bg-card) !important;
+  color: var(--green) !important;
+  border: 1px solid var(--border-medium) !important;
+}
+.btn-g:hover { background: rgba(45, 212, 191, 0.12) !important; border-color: var(--green) !important; box-shadow: none !important; }
+.btn-r {
+  background: rgba(248, 113, 113, 0.12) !important;
+  color: var(--red) !important;
+  border: 1px solid rgba(248, 113, 113, 0.35) !important;
+}
+.btn-r:hover { background: rgba(248, 113, 113, 0.20) !important; box-shadow: none !important; }
+.btn-s { padding: 5px 10px; font-size: 0.75rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-top: 3px solid var(--green) !important;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-body) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+.card:hover {
+  border-color: var(--border-medium) !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-hover) !important;
+  transform: translateY(-3px);
+}
+.card:nth-child(2) { border-top-color: var(--amber) !important; }
+.card:nth-child(3) { border-top-color: var(--green) !important; }
+.card:nth-child(4) { border-top-color: var(--red) !important; }
+.card .lbl {
+  font-size: 0.72rem;
+  color: var(--text-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.card .val {
+  font-size: 1.55rem;
+  font-weight: 700;
+  font-family: var(--font-display) !important;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+.card:nth-child(2) .val,
+.card:nth-child(3) .val { color: var(--text-primary) !important; text-shadow: none !important; }
+.card:nth-child(4) .val { color: var(--red) !important; }
+
+.section-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  padding: 18px;
+  margin-bottom: 14px;
+  border-left: 3px solid var(--green) !important;
+  font-family: var(--font-body) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+  position: relative;
+  overflow: hidden;
+}
+.section-card::before { content: none !important; }
+.section-card:hover {
+  border-color: var(--border-medium) !important;
+  border-left-color: var(--green) !important;
+  background: var(--bg-card) !important;
+}
+.section-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  margin-bottom: 12px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  font-family: var(--font-display) !important;
+}
+.section-card h3::before { content: none !important; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg-card) !important;
+  border-radius: 999px !important;
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-body) !important;
+  border: none;
+  border-radius: 999px;
+}
+.tab:hover { color: var(--text-primary) !important; }
+.tab.active {
+  background: var(--green) !important;
+  color: #000 !important;
+  font-weight: 600;
+  border-color: transparent !important;
+  text-shadow: none;
+}
+
+.tbl-wrap {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card) !important;
+}
+.tbl-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  background: var(--bg-surface) !important;
+}
+.tbl-hdr h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-display) !important;
+}
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  font-size: 0.82rem;
+}
+th {
+  background: var(--bg-surface) !important;
+  color: var(--text-secondary) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border) !important;
+}
+tr { transition: background 0.15s; }
+tr:hover { background: rgba(45, 212, 191, 0.06) !important; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  border: 1px solid currentColor;
+  border-radius: 999px !important;
+}
+.badge-g { background: rgba(45, 212, 191, 0.12) !important; color: var(--green) !important; }
+.badge-y { background: rgba(28, 36, 48, 0.08) !important; color: var(--amber) !important; }
+.badge-r { background: rgba(194, 59, 74, 0.1) !important; color: var(--red) !important; }
+.badge-b { background: rgba(45, 212, 191, 0.10) !important; color: var(--green) !important; }
+
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+.form-row label { font-size: 0.82rem; color: var(--text-secondary); min-width: 80px; }
+.muted { color: var(--text-muted); font-size: 0.8rem; }
+.ok { color: var(--green); }
+.err { color: var(--red); }
+
+.log-box {
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  background: var(--bg-deep) !important;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md) !important;
+  padding: 10px 12px;
+}
+.log-line {
+  margin-bottom: 3px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.log-time { color: var(--text-muted); }
+.log-info { color: var(--green); }
+.log-warn { color: var(--amber); }
+.log-error { color: var(--red); }
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-surface) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-subtle);
+}
+
+.fg { margin-bottom: 12px; }
+.fl {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.fi {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.88rem;
+}
+.fi:focus {
+  outline: none !important;
+  border-color: var(--green) !important;
+  box-shadow: var(--shadow-glow) !important;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  padding: 16px;
+}
+.modal.show { opacity: 1; pointer-events: auto; }
+.modal-c {
+  width: min(440px, 100%);
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xl) !important;
+  padding: 20px;
+  box-shadow: var(--shadow-hover) !important;
+  font-family: var(--font-body) !important;
+}
+
+.toast {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast div {
+  min-width: 220px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+.toast .s { border-color: rgba(45, 212, 191, 0.35) !important; color: var(--green) !important; }
+.toast .e { border-color: rgba(194, 59, 74, 0.35) !important; color: var(--red) !important; }
+
+[id^="sec-"] { display: none; }
+#sec-dashboard { display: block; }
+
+@media (max-width: 768px) {
+  .side { display: none; }
+  .main { padding: 12px; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="side">
+    <div class="side-logo"><div class="ico">V</div><div class="txt">VaultDrive</div></div>
+    <div class="nav active" onclick="showSec('dashboard')"><span class="ic">◉</span> 仪表盘</div>
+    <div class="nav" onclick="showSec('resources')"><span class="ic">▣</span> 资源管理</div>
+    <div class="nav" onclick="showSec('users')"><span class="ic">◇</span> 用户管理</div>
+    <div class="nav" onclick="showSec('import')"><span class="ic">↓</span> 导入队列</div>
+    <div class="nav" onclick="showSec('filters')"><span class="ic">⊘</span> 过滤词</div>
+    <div class="nav" onclick="showSec('deadlinks')"><span class="ic">⌀</span> 死链检测</div>
+    <div class="nav" onclick="showSec('tmdb')"><span class="ic">◎</span> TMDB</div>
+    <div class="nav" onclick="showSec('apis')"><span class="ic">⬡</span> API</div>
+    <div class="nav" onclick="showSec('announcements')"><span class="ic">※</span> 公告管理</div>
+    <div class="nav" onclick="showSec('sources')"><span class="ic">◈</span> 来源管理</div>
+    <div class="nav" onclick="showSec('settings')"><span class="ic">⚙</span> 系统设置</div>
+    <div class="nav" onclick="showSec('logs')"><span class="ic">☰</span> 系统日志</div>
+    <div class="nav" onclick="showSec('searchlogs')"><span class="ic">⌕</span> 搜索日志</div>
+    <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-subtle)">
+      <div class="nav" onclick="window.location.href='/'"><span class="ic">←</span> 返回首页</div>
+      <div class="nav" onclick="window.location.href='/logout?next=/login'"><span class="ic">⎋</span> 退出 / 换账号</div>
+    </div>
+  </div>
+  <div class="main">
+    <!-- 仪表盘 -->
+    <div id="sec-dashboard">
+      <div class="hdr"><h1>仪表盘</h1><button class="btn btn-g btn-s" onclick="loadDashboard()">↻ 刷新</button></div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="lbl">总资源数</div>
+          <div class="val" id="sTotal">-</div>
+        </div>
+        <div class="card">
+          <div class="lbl">累计访问</div>
+          <div class="val" id="sVisits">-</div>
+        </div>
+        <div class="card">
+          <div class="lbl">今日访问</div>
+          <div class="val" id="sTodayVisits">-</div>
+        </div>
+        <div class="card">
+          <div class="lbl">今日搜索</div>
+          <div class="val" id="sSearches">-</div>
+        </div>
+        <div class="card">
+          <div class="lbl">活跃引擎</div>
+          <div class="val" id="sEngines">-</div>
+        </div>
+        <div class="card">
+          <div class="lbl">待处理队列</div>
+          <div class="val" id="sQueue">-</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+        <div class="section-card">
+          <h3>🚀 快速操作</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button onclick="showSec('resources')" class="btn btn-g" style="justify-content:center">资源管理</button>
+            <button onclick="showSec('users')" class="btn btn-g" style="justify-content:center">用户管理</button>
+            <button onclick="showSec('filters')" class="btn btn-g" style="justify-content:center">过滤词</button>
+            <button onclick="showSec('apis')" class="btn btn-g" style="justify-content:center">API 测试</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>⚡ 系统状态</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="status-row">
+              <span style="color:var(--text-dim);font-size:.8rem">● 数据库</span>
+              <span style="color:var(--green);font-size:.75rem;text-shadow:0 0 6px var(--green-glow)">正常运行</span>
+            </div>
+            <div class="status-row">
+              <span style="color:var(--text-dim);font-size:.8rem">● API服务</span>
+              <span style="color:var(--green);font-size:.75rem;text-shadow:0 0 6px var(--green-glow)">正常运行</span>
+            </div>
+            <div class="status-row">
+              <span style="color:var(--text-dim);font-size:.8rem">● TMDB爬虫</span>
+              <span style="color:var(--green);font-size:.75rem;text-shadow:0 0 6px var(--green-glow)">正常运行</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin-bottom:0">📝 最近日志</h3>
+          <button onclick="showSec('logs')" class="btn btn-g btn-s">查看全部</button>
+        </div>
+        <div id="recentLogs" style="color:var(--text-muted);font-size:.8rem">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 资源管理 -->
+    <div id="sec-resources" style="display:none">
+      <div class="hdr"><h1>资源管理</h1></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>标题</th><th>来源</th><th>类型</th><th>年份</th></tr></thead>
+        <tbody id="resTbl"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div id="sec-users" style="display:none">
+      <div class="hdr"><h1>用户管理</h1><button class="btn btn-p btn-s" onclick="showModal('addUserModal')">+ 添加用户</button></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>最后登录</th><th>GitHub</th><th>操作</th></tr></thead>
+        <tbody id="userTbl"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 导入队列 -->
+    <div id="sec-import" style="display:none">
+      <div class="hdr"><h1>导入队列</h1>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-s" onclick="loadImportQueue()">↻ 刷新</button>
+          <button class="btn btn-p btn-s" onclick="processQueue()">处理队列</button>
+          <button class="btn btn-r btn-s" onclick="clearQueue()">清空</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>关键词</th><th>状态</th><th>结果数</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody id="importTbl"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 过滤词 -->
+    <div id="sec-filters" style="display:none">
+      <div class="hdr"><h1>过滤词管理</h1>
+        <div style="display:flex;gap:6px">
+          <input class="fi" id="newFilter" placeholder="添加过滤词" style="width:200px">
+          <button class="btn btn-p btn-s" onclick="addFilter()">添加</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>关键词</th><th>操作</th></tr></thead>
+        <tbody id="filterTbl"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 死链检测 -->
+    <div id="sec-deadlinks" style="display:none">
+      <div class="hdr"><h1>死链检测</h1>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-p btn-s" onclick="scanDeadlinks()">开始扫描</button>
+          <button class="btn btn-r btn-s" onclick="deleteDeadlinks()">删除死链</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="padding:16px">
+        <div id="deadlinkDetail" style="font-size:.85rem">加载中...</div>
+      </div>
+    </div>
+
+    <!-- TMDB爬虫 -->
+    <div id="sec-tmdb" style="display:none">
+      <div class="hdr"><h1>TMDB 爬虫</h1>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-p btn-s" onclick="startTmdbCrawl()">启动爬虫</button>
+          <button class="btn btn-g btn-s" onclick="checkTmdbStatus()">检查状态</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-hdr"><h3>状态</h3><span id="tmdbStatus">-</span></div>
+      </div>
+    </div>
+
+    <!-- API测试 -->
+    <div id="sec-apis" style="display:none">
+      <div class="hdr"><h1>API 测试</h1><button class="btn btn-p btn-s" onclick="testApis()">测试所有API</button></div>
+      <div class="tbl-wrap" style="padding:16px">
+        <div id="apiDetail" style="color:var(--text-muted)">点击按钮开始测试</div>
+      </div>
+    </div>
+
+    <!-- 公告管理 -->
+    <div id="sec-announcements" style="display:none">
+      <div class="hdr"><h1>公告管理</h1><button class="btn btn-p btn-s" onclick="showModal('announceModal')">+ 新建公告</button></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>标题</th><th>类型</th><th>状态</th><th>有效期</th><th>操作</th></tr></thead>
+          <tbody id="announceTbl"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 来源管理 -->
+    <div id="sec-sources" style="display:none">
+      <div class="hdr"><h1>来源管理</h1><button class="btn btn-p btn-s" onclick="showModal('sourceModal')">+ 新建来源</button></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>标识</th><th>名称</th><th>颜色</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="sourceTbl"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- 系统设置 -->
+    <div id="sec-settings" style="display:none">
+      <div class="hdr"><h1>系统设置</h1><button class="btn btn-p btn-s" onclick="saveSettings()">保存</button></div>
+      <div class="tbl-wrap" style="padding:16px">
+        <div class="fg"><label class="fl">站点名称</label><input class="fi" id="setSiteName" placeholder="VaultDrive"></div>
+        <div class="fg"><label class="fl">TMDB API Key</label><input class="fi" id="setTmdbKey" placeholder="留空则不修改"></div>
+        <div class="fg"><label class="fl">管理员密码</label><input class="fi" id="setAdminPass" type="password" placeholder="留空不修改"></div>
+        <div class="fg"><label class="fl">搜索日志保留天数</label><input class="fi" id="setSearchRetention" type="number" placeholder="90" min="7" max="3650"></div>
+        <div style="color:var(--text-muted);font-size:.72rem;margin:4px 0 18px">建议 90-365 天，设为 0 表示永久保留</div>
+
+        <h3 style="font-family:var(--font-display);margin:8px 0 14px;font-size:1.05rem;letter-spacing:-0.02em">Telegram 登录认证</h3>
+        <div id="tgLoginStatus" style="font-size:.82rem;color:var(--text-secondary);margin-bottom:12px">加载中…</div>
+        <div class="fg"><label class="fl">Bot API Token</label><input class="fi" id="setTgBotToken" type="password" placeholder="留空则不修改；从 BotFather 复制" autocomplete="off"></div>
+        <div id="setTgBotTokenHint" style="color:var(--text-muted);font-size:.72rem;margin:-6px 0 12px"></div>
+        <div class="fg"><label class="fl">Bot 用户名</label><input class="fi" id="setTgBotUsername" placeholder="例如 hermesagentalways_bot（不要加@）"></div>
+        <div class="fg"><label class="fl">超管 Telegram ID</label><input class="fi" id="setTgSuperAdmins" placeholder="1562902842,另一个ID"></div>
+        <div class="fg"><label class="fl">必加群（门禁）</label><input class="fi" id="setTgRequiredChat" placeholder="@heikuangchangshare 或 -100…；填 off 关闭"></div>
+        <div style="color:var(--text-muted);font-size:.72rem;margin-top:4px">纯内测门禁：不在该群的账号无法登录（含密码/GitHub）；Bot 须为群管理员。填 off 关闭。超管 Telegram ID 可兜底。</div>
+      </div>
+    </div>
+
+    <!-- 系统日志 -->
+    <div id="sec-logs" style="display:none">
+      <div class="hdr"><h1>系统日志</h1>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-s" onclick="loadLogs()">↻ 刷新</button>
+          <button class="btn btn-r btn-s" onclick="clearLogs()">清空</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><div class="log-viewer" id="logViewer">加载中...</div></div>
+    </div>
+
+    <!-- 搜索日志 -->
+    <div id="sec-searchlogs" style="display:none">
+      <div class="hdr"><h1>搜索日志</h1>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-s" onclick="loadSearchLogs()">↻ 刷新</button>
+          <button class="btn btn-r btn-s" onclick="cleanupSearchLogs()">清理过期</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>ID</th><th>关键词</th><th>用户</th><th>IP</th><th>时间</th><th>操作</th></tr></thead>
+          <tbody id="searchlogTbl"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">加载中...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加用户弹窗 -->
+<div class="modal" id="addUserModal">
+  <div class="modal-c">
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-family:var(--font-display);color:var(--text-primary);margin:0;letter-spacing:-0.02em">添加用户</h3>
+      <button onclick="hideModal('addUserModal')" class="btn btn-g btn-s">✕</button>
+    </div>
+    <div class="fg"><label class="fl">用户名</label><input class="fi" id="newUser" placeholder="用户名"></div>
+    <div class="fg"><label class="fl">密码</label><input class="fi" id="newPass" type="password" placeholder="密码"></div>
+    <div class="fg"><label class="fl">角色</label>
+      <select class="fi" id="newRole"><option value="user">普通用户</option><option value="admin">管理员</option></select>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-g btn-s" onclick="hideModal('addUserModal')">取消</button>
+      <button class="btn btn-p btn-s" onclick="addUser()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 公告管理弹窗 -->
+<div class="modal" id="announceModal">
+  <div class="modal-c">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 id="annModalTitle" style="font-family:var(--font-display);color:var(--text-primary);letter-spacing:-0.02em;margin:0">新建公告</h3>
+      <button onclick="resetAnnounceModal();hideModal('announceModal')" class="btn btn-g btn-s">✕</button>
+    </div>
+    <div class="fg"><label class="fl">标题</label><input class="fi" id="annTitle" placeholder="公告标题"></div>
+    <div class="fg"><label class="fl">内容</label><textarea class="fi" id="annContent" rows="3" placeholder="公告内容"></textarea></div>
+    <div class="fg"><label class="fl">类型</label>
+      <select class="fi" id="annType"><option value="banner">顶部横幅</option><option value="alert">提示条</option><option value="info">信息</option></select>
+    </div>
+    <div class="fg"><label class="fl">生效时间</label><input class="fi" id="annStart" type="datetime-local"></div>
+    <div class="fg"><label class="fl">失效时间</label><input class="fi" id="annEnd" type="datetime-local"></div>
+    <div class="fg" style="display:flex;align-items:center;gap:10px"><label class="fl" style="margin:0">状态</label><input type="checkbox" id="annActive" checked><span style="font-size:.8rem;color:var(--text-secondary)">启用</span></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-g btn-s" onclick="resetAnnounceModal();hideModal('announceModal')">取消</button>
+      <button class="btn btn-p btn-s" onclick="saveAnnouncement()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 来源管理弹窗 -->
+<div class="modal" id="sourceModal">
+  <div class="modal-c">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 id="sourceModalTitle" style="font-family:var(--font-display);color:var(--text-primary);letter-spacing:-0.02em;margin:0">新建来源</h3>
+      <button onclick="resetSourceModal();hideModal('sourceModal')" class="btn btn-g btn-s">✕</button>
+    </div>
+    <div class="fg"><label class="fl">标识</label><input class="fi" id="srcName" placeholder="如 quark"></div>
+    <div class="fg"><label class="fl">名称</label><input class="fi" id="srcLabel" placeholder="如 夸克网盘"></div>
+    <div class="fg"><label class="fl">颜色</label><input class="fi" id="srcColor" type="color" value="#58a6ff"></div>
+    <div class="fg" style="display:flex;align-items:center;gap:10px"><label class="fl" style="margin:0">状态</label><input type="checkbox" id="srcActive" checked><span style="font-size:.8rem;color:var(--text-secondary)">启用</span></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-g btn-s" onclick="resetSourceModal();hideModal('sourceModal')">取消</button>
+      <button class="btn btn-p btn-s" onclick="saveSource()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+async function api(u,m='GET',d=null){
+  const csrf=await(await fetch('/api/csrf-token')).json();
+  const o={method:m,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf.csrf_token||''}};
+  if(d)o.body=JSON.stringify(d);
+  const r=await fetch(u,o);
+  if(r.status===401){window.location.href='/';return null}
+  return r.json();
+}
+function show(t='',c='s'){const el=document.getElementById('toast');const d=document.createElement('div');d.className=c;d.textContent=t;el.appendChild(d);setTimeout(()=>d.remove(),3000)}
+function showModal(id){document.getElementById(id)?.classList.add('show')}
+function hideModal(id){document.getElementById(id)?.classList.remove('show')}
+
+function showSec(id){
+  document.querySelectorAll('[id^="sec-"]').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  const s=document.getElementById('sec-'+id);
+  if(s)s.style.display='block';
+  event?.target?.closest('.nav')?.classList.add('active');
+  if(id==='dashboard')loadDashboard();
+  if(id==='resources')loadResources('all');
+  if(id==='users')loadUsers();
+  if(id==='import')loadImportQueue();
+  if(id==='filters')loadFilters();
+  if(id==='deadlinks')loadDeadlinks();
+  if(id==='logs')loadLogs();
+  if(id==='settings')loadSettings();
+  if(id==='announcements')loadAnnouncements();
+  if(id==='sources')loadSources();
+}
+
+async function loadDashboard(){
+  try{
+    const [stats, dash, queue] = await Promise.all([
+      api('/api/stats'),
+      api('/api/admin/stats/dashboard'),
+      api('/api/admin/import_queue')
+    ]);
+    const overview = dash?.overview || {};
+    document.getElementById('sTotal').textContent=(stats?.total||overview.resources||0).toLocaleString();
+    const visits = dash?.total_visits ?? overview.total_visits ?? 0;
+    document.getElementById('sVisits').textContent=Number(visits).toLocaleString();
+    const todayVisits = dash?.today_visits ?? overview.today_visits ?? 0;
+    document.getElementById('sTodayVisits').textContent=Number(todayVisits).toLocaleString();
+    const dailySearches = dash?.daily_searches || [];
+    const todaySearches = dailySearches.length ? dailySearches[dailySearches.length-1].count : (overview.search_logs||0);
+    document.getElementById('sSearches').textContent=todaySearches;
+    document.getElementById('sEngines').textContent='6/6';
+    document.getElementById('sQueue').textContent=(queue?.items||[]).length;
+    loadRecentLogs();
+  }catch(e){console.error('Dashboard error:',e)}
+}
+
+async function loadRecentLogs(){
+  try{
+    const d = await api('/api/admin/logs?per_page=5');
+    const logs = d?.items || [];
+    const el = document.getElementById('recentLogs');
+    if(!logs.length){
+      el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)">暂无日志</div>';
+      return;
+    }
+    el.innerHTML=logs.map(l=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+        <span style="color:var(--green);font-size:.7rem">${(l.created_at||'').substring(5,16)}</span>
+        <span style="color:var(--text-primary);font-size:.8rem">${l.username||'-'}</span>
+        <span style="color:var(--text-dim);font-size:.75rem">${l.action||''}</span>
+        <span style="color:var(--text-muted);font-size:.72rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.detail||''}</span>
+      </div>
+    `).join('');
+  }catch(e){console.error('Logs error:',e)}
+}
+
+async function loadResources(type,el){
+  if(el){document.querySelectorAll('#sec-resources .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+  const d=await api('/api/resources?page=1&per_page=20'+(type!=='all'?'&type='+type:''));
+  if(!d)return;
+  const items=d.items||d.resources||[];
+  document.getElementById('resTbl').innerHTML=items.length?items.map(r=>{
+    const title=(r.title||r.note||'').substring(0,35);
+    const src=r.source||'-';
+    const srcColor={quark:'var(--amber)',aliyun:'var(--blue)',baidu:'var(--green)',xunlei:'var(--red)',tianyi:'var(--amber-dim)',uc:'var(--blue)'};
+    return `<tr>
+      <td style="color:var(--text-muted);font-size:.72rem">${r.id||'-'}</td>
+      <td>${title}</td>
+      <td><span class="badge ${src==='quark'?'badge-y':src==='aliyun'||src==='uc'?'badge-b':src==='baidu'||src==='tianyi'?'badge-g':'badge-r'}">${src}</span></td>
+      <td>${r.type||'-'}</td>
+      <td style="color:var(--text-muted);font-size:.72rem">${r.year||''}</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">暂无数据</td></tr>';
+}
+
+async function loadUsers(){
+  const d=await api('/api/users');
+  if(!d)return;
+  const users=d.items||d.users||d||[];
+  document.getElementById('userTbl').innerHTML=users.length?users.map(u=>`<tr>
+    <td>${u.id}</td>
+    <td><strong>${u.username}</strong></td>
+    <td><span class="badge ${u.role==='admin'?'badge-y':'badge-b'}">${u.role==='admin'?'管理员':'用户'}</span></td>
+    <td><span class="badge ${u.status===1?'badge-g':'badge-r'}">${u.status===1?'正常':'禁用'}</span></td>
+    <td style="color:var(--text-muted);font-size:.72rem">${(u.last_login||'').substring(0,16)}</td>
+    <td id="gh-${u.id}">${u.github_id?`<span style="color:var(--accent-green);font-size:.72rem">${u.github_id}</span>`:'<span style="color:var(--text-muted);font-size:.72rem">未绑定</span>'}</td>
+    <td>
+      <button class="btn btn-g btn-s" onclick="toggleUser(${u.id},${u.status})">${u.status===1?'禁用':'启用'}</button>
+      ${u.github_id?`<button class="btn btn-g btn-s" onclick="unbindGitHub(${u.id})">解绑</button>`:`<button class="btn btn-p btn-s" onclick="bindGitHub(${u.id})">绑定</button>`}
+      ${u.role!=='admin'?`<button class="btn btn-r btn-s" onclick="deleteUser(${u.id})">删除</button>`:''}
+    </td>
+  </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">暂无用户</td></tr>';
+}
+
+async function addUser(){
+  const u=document.getElementById('newUser').value,p=document.getElementById('newPass').value,r=document.getElementById('newRole').value;
+  if(!u||!p){show('请填写完整','e');return}
+  const d=await api('/api/users','POST',{username:u,password:p,role:r});
+  if(d.ok||d.id||d.success){show('添加成功');hideModal('addUserModal');loadUsers()}else show(d.error||'失败','e');
+}
+
+async function toggleUser(uid,status){
+  const d=await api('/api/users/'+uid,'POST',{status:status===1?0:1});
+  if(d.ok||d.success){show('操作成功');loadUsers()}else show(d.error||'失败','e');
+}
+
+async function bindGitHub(uid){
+  const id = prompt('输入要绑定的 GitHub ID（数字）：');
+  if(!id) return;
+  const d=await api('/api/users/'+uid+'/github','POST',{github_id:id});
+  if(d.ok||d.success){show('绑定成功');loadUsers()}else show(d.error||'绑定失败','e');
+}
+
+async function unbindGitHub(uid){
+  if(!confirm('确定解绑该用户的 GitHub 账号？')) return;
+  const d=await api('/api/users/'+uid+'/github','POST',{github_id:null});
+  if(d.ok||d.success){show('已解绑');loadUsers()}else show(d.error||'解绑失败','e');
+}
+
+async function deleteUser(uid){
+  if(!confirm('确定删除该用户？此操作不可恢复。')) return;
+  const d=await api('/api/users/'+uid,'DELETE');
+  if(d.ok||d.success){show('已删除');loadUsers()}else show(d.error||'删除失败','e');
+}
+
+async function loadImportQueue(){
+  const d=await api('/api/admin/import_queue');
+  if(!d)return;
+  const items=d.items||d.queue||d||[];
+  document.getElementById('importTbl').innerHTML=items.length?items.map(q=>{
+    const status=q.status||'pending';
+    const statusMap={done:'badge-g',pending:'badge-y',processing:'badge-b',failed:'badge-r'};
+    const statusLabel={done:'完成',pending:'等待',processing:'处理中',failed:'失败'};
+    return `<tr>
+      <td>${q.id}</td>
+      <td><strong>${q.keyword||q.query||''}</strong></td>
+      <td><span class="badge ${statusMap[status]||'badge-b'}">${statusLabel[status]||status}</span></td>
+      <td style="font-size:.72rem">${q.result_count||0}条</td>
+      <td style="color:var(--text-muted);font-size:.72rem">${(q.created_at||'').substring(0,16)}</td>
+      <td><button class="btn btn-r btn-s" onclick="deleteImport(${q.id})">删除</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">队列为空</td></tr>';
+}
+
+async function processQueue(){const d=await api('/api/admin/process_queue','POST');show(d.ok?'开始处理':'处理失败',d.ok?'s':'e');loadImportQueue()}
+async function clearQueue(){const d=await api('/api/admin/import_queue/clear','POST');show(d.ok?'已清空':'失败',d.ok?'s':'e');loadImportQueue()}
+async function deleteImport(id){const d=await api('/api/admin/import_queue/'+id,'DELETE');if(d.ok){show('已删除');loadImportQueue()}}
+
+async function loadFilters(){
+  const d=await api('/api/admin/filter_words');
+  if(!d)return;
+  const items=d.items||d.filters||d||[];
+  document.getElementById('filterTbl').innerHTML=items.map(f=>`<tr><td>${f.id}</td><td style="color:var(--red)">${f.word||f.keyword||''}</td><td><button class="btn btn-r btn-s" onclick="deleteFilter(${f.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:30px">暂无</td></tr>';
+}
+
+async function addFilter(){
+  const w=document.getElementById('newFilter').value.trim();
+  if(!w)return;
+  const d=await api('/api/admin/filter_words','POST',{word:w});
+  if(d.ok||d.id||d.success){show('已添加');document.getElementById('newFilter').value='';loadFilters()}else show(d.error||'失败','e');
+}
+
+async function deleteFilter(id){const d=await api('/api/admin/filter_words/'+id,'DELETE');if(d.ok){show('已删除');loadFilters()}}
+
+async function loadDeadlinks(){
+  const d=await api('/api/admin/deadlinks/unchecked_count');
+  if(!d)return;
+  const items=d.items||[];
+  const total=d.total||0;
+  let html=`<div style="margin-bottom:12px">未检测总数: <strong style="color:var(--amber);text-shadow:0 0 6px var(--amber-glow)">${total.toLocaleString()}</strong></div>`;
+  html+=items.map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+    <span>${i.source||''}</span>
+    <span style="color:var(--amber)">${(i.c||0).toLocaleString()}</span>
+  </div>`).join('');
+  document.getElementById('deadlinkDetail').innerHTML=html;
+}
+async function scanDeadlinks(){show('开始扫描...');const d=await api('/api/admin/deadlinks/scan','POST');show(d.ok?'扫描完成':'扫描失败',d.ok?'s':'e')}
+async function deleteDeadlinks(){const d=await api('/api/admin/deadlinks/delete','POST');show(d.ok?'已删除死链':'失败',d.ok?'s':'e')}
+
+async function startTmdbCrawl(){show('启动TMDB爬虫...');const d=await api('/api/admin/tmdb/crawl','POST');show(d.ok?'爬虫已启动':'启动失败',d.ok?'s':'e')}
+async function checkTmdbStatus(){const d=await api('/api/admin/tmdb/status');if(d)document.getElementById('tmdbStatus').textContent=JSON.stringify(d)}
+
+async function testApis(){
+  show('正在测试...');
+  const d=await api('/api/admin/test_apis');
+  if(!d)return;
+  const results=d.results||[];
+  const totalOk=d.total_ok||0;
+  const totalErr=d.total_error||0;
+  const dbLatency=d.db_latency_ms||0;
+  let html=`<div style="margin-bottom:12px;display:flex;gap:12px">
+    <span class="badge badge-g">正常: ${totalOk}</span>
+    <span class="badge badge-r">异常: ${totalErr}</span>
+    <span class="badge badge-b">数据库: ${dbLatency}ms</span>
+  </div>`;
+  html+=results.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+    <span class="badge ${a.status==='ok'?'badge-g':'badge-r'}">${a.status==='ok'?'✓':'✗'}</span>
+    <span style="flex:1">${a.method||''} ${a.path||''}</span>
+    <span style="color:var(--text-muted);font-size:.72rem">${a.ms||'-'}ms</span>
+  </div>`).join('');
+  document.getElementById('apiDetail').innerHTML=html;
+  show('测试完成');
+}
+
+async function loadSettings(){
+  try{
+    const d=await api('/api/admin/settings');
+    const items=d.items||d.settings||[];
+    const map={};
+    items.forEach(s=>{ map[s.key]=s; });
+    if(map.site_name)document.getElementById('setSiteName').value=map.site_name.value||'';
+    if(map.search_log_retention_days)document.getElementById('setSearchRetention').value=map.search_log_retention_days.value||'90';
+    // TMDB / TG token：不回填明文，只提示是否已配置
+    const tmdb=map.tmdb_api_key;
+    document.getElementById('setTmdbKey').value='';
+    document.getElementById('setTmdbKey').placeholder=tmdb&&tmdb.has_value?('已配置 '+ (tmdb.value_masked||'')):'留空则不修改';
+    const tgTok=map.telegram_bot_token;
+    document.getElementById('setTgBotToken').value='';
+    document.getElementById('setTgBotTokenHint').textContent=tgTok&&tgTok.has_value?('当前已配置：'+(tgTok.value_masked||'')):'尚未保存 Token（也可继续用环境变量兜底）';
+    document.getElementById('setTgBotUsername').value=(map.telegram_bot_username&&map.telegram_bot_username.value)|| (d.telegram_login&&d.telegram_login.bot_username)||'';
+    document.getElementById('setTgSuperAdmins').value=(map.telegram_superadmin_ids&&map.telegram_superadmin_ids.value)||'1562902842';
+    const reqChatEl=document.getElementById('setTgRequiredChat');
+    if(reqChatEl) reqChatEl.value=(map.telegram_required_chat&&map.telegram_required_chat.value)|| (d.telegram_login&&d.telegram_login.required_chat)||'@heikuangchangshare';
+    const st=document.getElementById('tgLoginStatus');
+    if(st && d.telegram_login){
+      const t=d.telegram_login;
+      const chat = t.required_chat ? ` · 必加群 <a href="${t.required_chat_link||'#'}" target="_blank" rel="noopener">${t.required_chat}</a>` : '';
+      st.innerHTML = t.enabled
+        ? `<span style="color:var(--green)">✓ Telegram 登录已启用</span> · Bot @${t.bot_username||'-'} · 超管 ${ (t.superadmin_ids||[]).join(', ') }${chat}`
+        : `<span style="color:var(--red)">未启用</span> · 请填写 Bot Token 与用户名并保存`;
+    }
+  }catch(e){}
+}
+
+async function saveSettings(){
+  const settings=[
+    {key:'site_name',value:document.getElementById('setSiteName').value},
+    {key:'tmdb_api_key',value:document.getElementById('setTmdbKey').value},
+    {key:'search_log_retention_days',value:document.getElementById('setSearchRetention').value||'90'},
+    {key:'telegram_bot_token',value:document.getElementById('setTgBotToken').value},
+    {key:'telegram_bot_username',value:document.getElementById('setTgBotUsername').value},
+    {key:'telegram_superadmin_ids',value:document.getElementById('setTgSuperAdmins').value||'1562902842'},
+    {key:'telegram_required_chat',value:(document.getElementById('setTgRequiredChat')||{}).value||'@heikuangchangshare'}
+  ];
+  const pass=document.getElementById('setAdminPass').value;
+  const d=await api('/api/admin/settings','POST',{settings,admin_pass:pass});
+  show(d.ok||d.success?'保存成功':'保存失败',d.ok||d.success?'s':'e');
+  if(d.ok||d.success) loadSettings();
+}
+
+async function loadLogs(){
+  const d=await api('/api/admin/logs');
+  if(!d)return;
+  const logs=d.items||d.logs||d||[];
+  const actionLabels={
+    'filter_add':'添加过滤词','filter_delete':'删除过滤词',
+    'user_add':'添加用户','user_status':'更新用户状态','user_update':'更新用户',
+    'settings_save':'保存设置','queue_process':'处理队列','queue_clear':'清空队列',
+    'deadlink_scan':'死链扫描','deadlink_delete':'删除死链','tmdb_crawl':'TMDB爬虫',
+    'logs_clear':'清空日志','import':'导入资源','search_blocked':'搜索拦截',
+    'announcement_create':'创建公告','announcement_update':'更新公告','announcement_delete':'删除公告'
+  };
+  document.getElementById('logViewer').innerHTML=logs.length?logs.map(l=>{
+    const action=l.action||'';
+    const label=actionLabels[action]||action;
+    const detail=l.detail||'';
+    const time=(l.created_at||'').substring(0,19);
+    const user=l.username||'系统';
+    return `<div class="log-line">
+      <span style="color:var(--text-muted);white-space:nowrap">${time}</span>
+      <span class="badge badge-b" style="min-width:60px;text-align:center">${user}</span>
+      <span style="color:var(--amber);min-width:80px">${label}</span>
+      <span style="color:var(--text-secondary);flex:1">${detail}</span>
+    </div>`;
+  }).join(''):'<div style="text-align:center;padding:40px;color:var(--text-muted)">暂无操作日志</div>';
+}
+
+async function loadAnnouncements(){
+  const d=await api('/api/admin/announcements');
+  if(!d)return;
+  const items=d.items||[];
+  document.getElementById('announceTbl').innerHTML=items.length?items.map(a=>`<tr>
+    <td>${a.id}</td>
+    <td><strong>${a.title||''}</strong></td>
+    <td><span class="badge ${a.type==='banner'?'badge-y':a.type==='alert'?'badge-r':'badge-b'}">${a.type||'banner'}</span></td>
+    <td><span class="badge ${a.active==='1'||a.active===1?'badge-g':'badge-r'}">${a.active==='1'||a.active===1?'启用':'禁用'}</span></td>
+    <td style="color:var(--text-muted);font-size:.72rem">${(a.start_time||'').substring(0,16)} ~ ${(a.end_time||'').substring(0,16)}</td>
+    <td>
+      <button class="btn btn-g btn-s" onclick="editAnnouncement(${a.id})">编辑</button>
+      <button class="btn btn-r btn-s" onclick="deleteAnnouncement(${a.id})">删除</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">暂无公告</td></tr>';
+}
+
+async function saveAnnouncement(){
+  const title=document.getElementById('annTitle').value.trim();
+  const content=document.getElementById('annContent').value.trim();
+  const type=document.getElementById('annType').value;
+  const start=document.getElementById('annStart').value;
+  const end=document.getElementById('annEnd').value;
+  const active=document.getElementById('annActive').checked?1:0;
+  if(!title&&!content){show('请填写标题或内容','e');return}
+  const payload={title,content,type,active,start_time:start||null,end_time:end||null};
+  const editId=document.getElementById('announceModal').dataset.editId;
+  const url=editId?`/api/admin/announcements/${editId}`:'/api/admin/announcements';
+  const method=editId?'POST':'POST';
+  const d=await api(url,method,payload);
+  if(d.ok||d.success){show(editId?'已更新':'已创建','s');hideModal('announceModal');loadAnnouncements()}
+  else show(d.error||'失败','e');
+}
+
+async function deleteAnnouncement(id){
+  if(!confirm('确定删除该公告？')) return;
+  const d=await api(`/api/admin/announcements/${id}`,'DELETE');
+  if(d.ok||d.success){show('已删除');loadAnnouncements()}else show(d.error||'删除失败','e');
+}
+
+async function editAnnouncement(id){
+  const d=await api(`/api/admin/announcements`);
+  if(!d)return;
+  const item=(d.items||[]).find(x=>x.id===id);
+  if(!item)return;
+  document.getElementById('announceModal').dataset.editId=id;
+  document.getElementById('annTitle').value=item.title||'';
+  document.getElementById('annContent').value=item.content||'';
+  document.getElementById('annType').value=item.type||'banner';
+  document.getElementById('annStart').value=item.start_time||'';
+  document.getElementById('annEnd').value=item.end_time||'';
+  document.getElementById('annActive').checked=item.active==='1'||item.active===1;
+  document.getElementById('annModalTitle').textContent='编辑公告';
+  showModal('announceModal');
+}
+
+function resetAnnounceModal(){
+  document.getElementById('announceModal').dataset.editId='';
+  document.getElementById('annTitle').value='';
+  document.getElementById('annContent').value='';
+  document.getElementById('annType').value='banner';
+  document.getElementById('annStart').value='';
+  document.getElementById('annEnd').value='';
+  document.getElementById('annActive').checked=true;
+  document.getElementById('annModalTitle').textContent='新建公告';
+}
+
+async function clearLogs(){const d=await api('/api/admin/logs/clear','POST');show(d.ok?'已清空':'失败',d.ok?'s':'e');loadLogs()}
+
+async function loadSources(){
+  const d=await api('/api/admin/sources');
+  if(!d)return;
+  const items=d.items||[];
+  document.getElementById('sourceTbl').innerHTML=items.length?items.map(s=>`<tr>
+    <td>${s.id}</td>
+    <td><code>${s.name||''}</code></td>
+    <td><strong>${s.label||s.name||''}</strong></td>
+    <td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:${s.color||'#58a6ff'};border:1px solid rgba(255,255,255,0.15)"></span> <code>${s.color||''}</code></td>
+    <td><span class="badge ${s.active==='1'||s.active===1?'badge-g':'badge-r'}">${s.active==='1'||s.active===1?'启用':'禁用'}</span></td>
+    <td>
+      <button class="btn btn-g btn-s" onclick="editSource(${s.id})">编辑</button>
+      <button class="btn btn-r btn-s" onclick="deleteSource(${s.id})">删除</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">暂无来源</td></tr>';
+}
+
+async function saveSource(){
+  const name=document.getElementById('srcName').value.trim();
+  const label=document.getElementById('srcLabel').value.trim();
+  const color=document.getElementById('srcColor').value.trim();
+  const active=document.getElementById('srcActive').checked?1:0;
+  if(!name||!label){show('请填写标识和名称','e');return}
+  const payload={name,label,color,active};
+  const editId=document.getElementById('sourceModal').dataset.editId;
+  const url=editId?`/api/admin/sources/${editId}`:'/api/admin/sources';
+  const d=await api(url,'POST',payload);
+  if(d.ok||d.success){show(editId?'已更新':'已创建','s');hideModal('sourceModal');loadSources()}
+  else show(d.error||'失败','e');
+}
+
+async function deleteSource(id){
+  if(!confirm('确定删除该来源？')) return;
+  const d=await api(`/api/admin/sources/${id}`,'DELETE');
+  if(d.ok||d.success){show('已删除');loadSources()}else show(d.error||'删除失败','e');
+}
+
+async function editSource(id){
+  const d=await api('/api/admin/sources');
+  if(!d)return;
+  const item=(d.items||[]).find(x=>x.id===id);
+  if(!item)return;
+  document.getElementById('sourceModal').dataset.editId=id;
+  document.getElementById('srcName').value=item.name||'';
+  document.getElementById('srcLabel').value=item.label||'';
+  document.getElementById('srcColor').value=item.color||'#58a6ff';
+  document.getElementById('srcActive').checked=item.active==='1'||item.active===1;
+  document.getElementById('sourceModalTitle').textContent='编辑来源';
+  showModal('sourceModal');
+}
+
+function resetSourceModal(){
+  document.getElementById('sourceModal').dataset.editId='';
+  document.getElementById('srcName').value='';
+  document.getElementById('srcLabel').value='';
+  document.getElementById('srcColor').value='#58a6ff';
+  document.getElementById('srcActive').checked=true;
+  document.getElementById('sourceModalTitle').textContent='新建来源';
+}
+
+async function loadSearchLogs(){
+  const d=await api('/api/admin/search_logs?per_page=50');
+  if(!d)return;
+  const items=d.items||d.logs||d||[];
+  document.getElementById('searchlogTbl').innerHTML=items.length?items.map(s=>`<tr>
+    <td>${s.id}</td>
+    <td><strong>${s.keyword||''}</strong></td>
+    <td style="color:var(--text-muted);font-size:.72rem">${s.username||s.user_id||'-'}</td>
+    <td style="color:var(--text-muted);font-size:.72rem">${s.ip||''}</td>
+    <td style="color:var(--text-muted);font-size:.72rem">${(s.created_at||'').substring(0,19)}</td>
+    <td><button class="btn btn-r btn-s" onclick="deleteSearchLog(${s.id})">删除</button></td>
+  </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">暂无搜索日志</td></tr>';
+}
+
+async function deleteSearchLog(id){
+  if(!confirm('确定删除该搜索记录？')) return;
+  const d=await api('/api/admin/search_logs/'+id,'DELETE');
+  if(d.ok||d.success){show('已删除');loadSearchLogs()}else show(d.error||'删除失败','e');
+}
+
+async function cleanupSearchLogs(){
+  if(!confirm('按当前保留天数清理过期搜索日志？')) return;
+  const d=await api('/api/admin/search_logs/cleanup','POST');
+  if(d.ok||d.success){show(`已清理 ${d.deleted||0} 条记录`);loadSearchLogs()}else show(d.error||'清理失败','e');
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

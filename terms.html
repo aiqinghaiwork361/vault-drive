@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>使用条款与免责声明 · VaultDrive</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #000000;
+  --bg-surface: #0a0a0c;
+  --bg-card: #121318;
+  --amber: #fbbf24;
+  --amber-dim: #d97706;
+  --text-primary: #f5f5f7;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(251, 191, 36, 0.3);
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --font-main: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+  --font-mono: 'Sora', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  line-height: 1.6;
+  padding: 40px 20px 80px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 860px;
+}
+
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--amber);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 32px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+.nav-back:hover {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: var(--amber);
+  transform: translateX(-2px);
+}
+
+.header {
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+}
+
+.header-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--amber);
+  background: rgba(251, 191, 36, 0.1);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card-num {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 800;
+  color: rgba(251, 191, 36, 0.12);
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  line-height: 1;
+  user-select: none;
+}
+
+.card h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--amber);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card p {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+.card p:last-child {
+  margin-bottom: 0;
+}
+
+.highlight-box {
+  background: rgba(251, 191, 36, 0.05);
+  border-left: 3px solid var(--amber);
+  padding: 14px 18px;
+  border-radius: 4px;
+  margin-top: 16px;
+  color: var(--text-primary);
+  font-size: 13.5px;
+}
+
+.footer {
+  margin-top: 60px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <a href="/" class="nav-back">← 返回首页</a>
+
+  <header class="header">
+    <span class="header-badge">Terms & Disclaimer</span>
+    <h1>使用条款与免责声明</h1>
+    <p>VaultDrive 仅提供影视资料索引整理、社区交流与用户公开分享信息的展示。继续使用本站，即表示你已了解并接受以下说明。</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <span class="card-num">01</span>
+      <h2>本站提供什么</h2>
+      <p>本站是<b>公益性质的影视资料检索与分享社区</b>，不提供在线播放与存储服务，不运营或销售任何影视资源，亦不提供任何商业化影视产品。</p>
+      <p>站内出现的资料、TMDB元数据、网络检索链接与网盘资源信息均来自互联网公开数据或用户个人分享，仅用于技术交流、学习检索与个人合理使用。</p>
+      <div class="highlight-box">
+        💡 请尊重内容版权与分享者劳动，严禁批量抓取、原样搬运、重新打包转售，或将站内内容用于任何非法及商业盈利目的。
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="card-num">02</span>
+      <h2>免责声明与解释权</h2>
+      <p>用户应自行确认访问、下载、存储和使用相关内容的合法性、安全性与适用性。</p>
+      <p>本站不对外部网盘资源的可用性、时效性、完整度、清晰度、字幕质量、设备兼容性或第三方网盘服务的任何结果承担保证责任；因用户自行访问、转存或使用产生的任何法律责任或后果，均由使用者自行承担。</p>
+      <p>为维护平台健康运行，本站有权依法屏蔽失效内容、限制恶意访问或封禁损害社区环境的账号，并保留对服务规则的调整与最终解释权。</p>
+    </section>
+
+    <section class="card">
+      <span class="card-num">03</span>
+      <h2>赞助与积分说明</h2>
+      <p>平台内的积分、签到奖励及相关支持者标识，本质上均用于激励活跃社区建设，以及对服务器硬件、带宽及日常运维成本的自愿支持。</p>
+      <p>积分获取与支持行为不构成购买任何受版权保护的音视频产品或播放服务，亦不取得任何资源的所有权、商业使用权或规则豁免权。</p>
+      <div class="highlight-box">
+        🤝 站内提供的便利与功能增强仅用于表达对社区贡献者的感谢，不形成破坏性或排他性权益。
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 VaultDrive · 公益维护 · 尊重分享</p>
+  </footer>
+</div>
+
+</body>
+</html>

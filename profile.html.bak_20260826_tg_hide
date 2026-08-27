@@ -593,9 +593,9 @@ header {
       </div>
 
       <!-- 第三方绑定 -->
-      <div class="settings-card" id="thirdPartyBindCard">
+      <div class="settings-card">
         <h3>多平台账号绑定</h3>
-        <div class="form-item" id="tgBindFormItem">
+        <div class="form-item">
           <label>Telegram 账号</label>
           <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--hairline);">
             <span id="tgStatusText" style="font-size:13px;font-weight:500;">未绑定</span>
@@ -603,7 +603,7 @@ header {
           </div>
           <div id="tgBindHint" style="font-size:12px;color:var(--ink-subtle);margin-top:6px;display:none;"></div>
         </div>
-        <div class="form-item" id="ghBindFormItem" style="margin-top:20px;">
+        <div class="form-item" style="margin-top:20px;">
           <label>GitHub 账号</label>
           <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--hairline);">
             <span id="ghStatusText" style="font-size:13px;font-weight:500;">未绑定</span>
@@ -694,28 +694,6 @@ async function loadUserMe() {
       ghTxt.textContent = '未绑定';
       ghAct.innerHTML = `<a class="btn btn-primary btn-sm" href="/login/github?bind=1&next=/profile">绑定账号</a>`;
     }
-
-    // 国内 IP 与 第三方绑定控制
-    try {
-      const cfgResp = await fetch('/api/telegram/login-config');
-      const cfg = await cfgResp.json();
-      const tgFormItem = document.getElementById('tgBindFormItem');
-      const ghFormItem = document.getElementById('ghBindFormItem');
-      const thirdPartyCard = document.getElementById('thirdPartyBindCard');
-
-      // 若未绑定 Telegram 且处于国内 IP 环境，隐藏 Telegram 绑定条目
-      const showTg = Boolean(d.telegram_id || (cfg.enabled && cfg.is_foreign));
-      if (tgFormItem) tgFormItem.style.display = showTg ? 'block' : 'none';
-
-      // GitHub 绑定条目检测
-      const showGh = Boolean(d.github_id || cfg.github_enabled);
-      if (ghFormItem) ghFormItem.style.display = showGh ? 'block' : 'none';
-
-      // 若 Telegram 与 GitHub 都隐藏，隐藏整个卡片
-      if (thirdPartyCard) {
-        thirdPartyCard.style.display = (showTg || showGh) ? 'block' : 'none';
-      }
-    } catch(e) {}
     // 签到按钮状态初始化
     const btn = document.getElementById('checkinBtn');
     if (btn) {

@@ -2873,135 +2873,6 @@ tbody tr:last-child td {
   min-height: 148px;
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.search-view-toggle {
-  display: inline-flex;
-  background: var(--bg-tertiary, rgba(255,255,255,0.05));
-  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
-  border-radius: 8px;
-  padding: 2px;
-  gap: 2px;
-}
-.search-view-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary, #888);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.search-view-btn.active {
-  background: var(--primary, #3b82f6);
-  color: #fff;
-}
-.search-group-card {
-  background: var(--bg-card, #16181d);
-  border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
-  border-radius: var(--radius-lg, 12px);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.search-group-card:hover {
-  border-color: var(--border-medium, rgba(255,255,255,0.18));
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-}
-.group-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-.group-title-wrap {
-  flex: 1;
-  min-width: 0;
-}
-.group-main-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary, #fff);
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-.group-meta-tags {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.group-pill {
-  font-size: 0.7rem;
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-.group-pill-count {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-.group-pill-quality {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-.group-versions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.06));
-  padding-top: 12px;
-}
-.version-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  background: var(--bg-tertiary, rgba(255,255,255,0.03));
-  border-radius: 8px;
-  gap: 10px;
-  font-size: 0.82rem;
-}
-.version-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-}
-.version-src {
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.version-title {
-  color: var(--text-secondary, #ccc);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.version-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.btn-report {
-  opacity: 0.6;
-  transition: opacity 0.15s ease;
-}
-.btn-report:hover {
-  opacity: 1;
-  color: #f87171 !important;
-}
-
 .search-card:hover {
   border-color: var(--border-medium);
   transform: translateY(-2px);
@@ -3175,6 +3046,19 @@ tbody tr:last-child td {
         </div>
       </div>
 
+      <div class="section-header poster-wall-head">
+        <div>
+          <h2 class="section-title" id="posterWallTitle">随便看看</h2>
+          <p class="section-subtitle">点海报看本站片源 · 角标显示有源/盘类型</p>
+        </div>
+        <div class="filter-bar" id="posterFilterBar">
+          <button type="button" class="filter-chip active" aria-pressed="true" onclick="setHomeChip(this,'all')">全部</button>
+          <button type="button" class="filter-chip" aria-pressed="false" onclick="setHomeChip(this,'movie')">电影</button>
+          <button type="button" class="filter-chip" aria-pressed="false" onclick="setHomeChip(this,'tv')">剧集</button>
+          <button type="button" class="filter-chip" aria-pressed="false" onclick="setHomeChip(this,'anime')">动画</button>
+          <button type="button" class="filter-chip" aria-pressed="false" onclick="setHomeChip(this,'top_rated')">高分</button>
+        </div>
+      </div>
       <div id="posterWallGrid" class="poster-wall-masonry"></div>
       <div class="card-grid" id="resourceGrid" style="display:none"></div>
     </div>
@@ -3189,53 +3073,6 @@ tbody tr:last-child td {
         </div>
       </div>
     </div>
-
-    <!-- ===== HDHIVE STYLE FOOTER ===== -->
-    <footer class="site-footer-modern" style="margin-top:80px;border-top:1px solid rgba(255,255,255,0.08);padding:48px 24px 36px;color:var(--text-secondary,#a3a3a3);font-size:13.5px;">
-      <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:36px;margin-bottom:36px;">
-        <div style="grid-column: span 1.5;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <span style="font-family:'Space Grotesk',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-0.02em;">VaultDrive</span>
-          </div>
-          <p style="font-size:13px;line-height:1.7;color:var(--text-muted,#737373);max-width:320px;">
-            公益影视资料与分享社区。合理个人使用，尊重每一位分享者；本站不提供在线播放服务。
-          </p>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px;">发现</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <a href="javascript:void(0)" onclick="setHomeChip(null,'movie')" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">热门电影</a>
-            <a href="javascript:void(0)" onclick="setHomeChip(null,'tv')" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">热播剧集</a>
-            <a href="javascript:void(0)" onclick="setHomeChip(null,'anime')" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">动漫番剧</a>
-            <a href="javascript:void(0)" onclick="setHomeChip(null,'top_rated')" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">高分经典</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px;">服务与支持</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div id="footerTgLinks" style="display:none;flex-direction:column;gap:10px;">
-              <a href="https://t.me/tg38haokuangchang_bot" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">TG 搜片机器人</a>
-              <a href="https://t.me/heikuangchang" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">官方频道 @heikuangchang</a>
-              <a href="https://t.me/heikuangchangshare" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">交流大群 @heikuangchangshare</a>
-            </div>
-            <a href="/profile" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">个人中心 · 每日签到</a>
-            <a href="/profile" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">关键词监控订阅</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:14px;">规则与协议</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <a href="/terms" target="_blank" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">使用条款 & 免责声明</a>
-            <a href="/profile" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">积分流水明细</a>
-            <a href="/terms" target="_blank" style="color:inherit;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='inherit'">公益支持说明</a>
-          </div>
-        </div>
-      </div>
-      <div style="max-width:1280px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--text-muted,#737373);">
-        <div>© 2026 VaultDrive · 公益维护 · 尊重分享</div>
-        <div>本站所有资源均来自用户分享与网络检索</div>
-      </div>
-    </footer>
 
   </main>
 </div>
@@ -3293,7 +3130,6 @@ const APP = {
   searchQuery: '',
   searchPage: 1,
   searchResults: [],
-  viewMode: localStorage.getItem('res_view_mode') || 'aggregate',
   searchTotal: 0,
   currentPage: 'home',
   currentSlide: 0,
@@ -4281,43 +4117,6 @@ function getSourceName(source) {
   return names[key] || key;
 }
 
-function toggleViewMode(mode) {
-  APP.viewMode = mode;
-  localStorage.setItem('res_view_mode', mode);
-  renderSearchResults(APP.searchResults, APP.searchTotal, false);
-}
-
-async function reportDeadLink(rid, btn) {
-  if (!rid) return;
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '提交中…';
-  }
-  try {
-    const res = await fetch('/api/resource/' + rid + '/report_dead', { method: 'POST' });
-    const data = await res.json();
-    if (data && data.ok) {
-      if (btn) {
-        btn.textContent = '已反馈';
-        btn.style.color = '#34d399';
-      }
-      if (typeof showToast === 'function') showToast('感谢反馈！已加入复检队列', 'success');
-      else alert('感谢反馈！已加入优先复检队列');
-    } else {
-      if (btn) {
-        btn.textContent = '已提交';
-        btn.disabled = true;
-      }
-      if (typeof showToast === 'function') showToast(data.error || '已提交', 'info');
-    }
-  } catch(e) {
-    if (btn) {
-      btn.textContent = '已提交';
-      btn.disabled = true;
-    }
-  }
-}
-
 function renderSearchResults(results, total, hasMore) {
   const container = document.getElementById('searchResults');
   if (!container) return;
@@ -4344,144 +4143,51 @@ function renderSearchResults(results, total, hasMore) {
     const chipTotal = (chipStats._total != null) ? chipStats._total : total;
     const totalPages = Math.ceil(total / APP.pageSize) || 1;
     const currentPage = APP.searchPage || 1;
-    const isAggregate = APP.viewMode === 'aggregate';
 
     const chipHtml = (src, label, count, active) => {
       const color = src === 'all' ? 'var(--green)' : getSourceColor(src);
       const cls = active ? 'filter-chip active' : 'filter-chip';
       const extra = active && src !== 'all' ? ` style="background:${color}22;border-color:${color};color:${color}"` : '';
-      return `<button type="button" class="${cls}" onclick="filterBySource('${String(src).replace(/'/g, "\'")}')"${extra}>${esc(label)} <strong>${count}</strong></button>`;
+      return `<button type="button" class="${cls}" onclick="filterBySource('${String(src).replace(/'/g, "\\'")}')"${extra}>${esc(label)} <strong>${count}</strong></button>`;
     };
-
-    let contentHtml = '';
-    if (isAggregate) {
-      const aggMap = new Map();
-      results.forEach(r => {
-        const titleKey = cleanTitle(r.title || '').trim().toLowerCase();
-        if (!aggMap.has(titleKey)) {
-          aggMap.set(titleKey, {
-            mainTitle: cleanTitle(r.title || ''),
-            type: r.type || '',
-            year: r.year || '',
-            rating: r.rating || '',
-            items: []
-          });
-        }
-        const g = aggMap.get(titleKey);
-        g.items.push(r);
-        if (!g.type && r.type) g.type = r.type;
-        if (!g.year && r.year) g.year = r.year;
-        if (!g.rating && r.rating) g.rating = r.rating;
-      });
-
-      const groups = Array.from(aggMap.values());
-      contentHtml = `
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          ${groups.map(g => {
-            const srcCounts = {};
-            let has4k = false;
-            let has1080 = false;
-            g.items.forEach(it => {
-              const s = it.source || 'other';
-              srcCounts[s] = (srcCounts[s] || 0) + 1;
-              const q = (it.quality || it.title || '').toUpperCase();
-              if (q.includes('4K') || q.includes('2160')) has4k = true;
-              else if (q.includes('1080')) has1080 = true;
-            });
-            const topQuality = has4k ? '4K UHD' : (has1080 ? '1080P' : (g.items[0]?.quality || ''));
-            const srcPills = Object.keys(srcCounts).slice(0, 4).map(s => {
-              const col = getSourceColor(s);
-              return `<span class="group-pill" style="color:${col};background:${col}18;border:1px solid ${col}44;">${esc(getSourceName(s))} (${srcCounts[s]})</span>`;
-            }).join('');
-
-            return `
-              <article class="search-group-card">
-                <div class="group-header">
-                  <div class="group-title-wrap">
-                    <div class="group-main-title">${esc(g.mainTitle)}</div>
-                    <div class="group-meta-tags">
-                      <span class="group-pill group-pill-count">收录 ${g.items.length} 个版本</span>
-                      ${topQuality ? `<span class="group-pill group-pill-quality">${esc(topQuality)}</span>` : ''}
-                      ${g.type ? `<span class="group-pill" style="background:rgba(255,255,255,0.06);color:var(--text-secondary);">${esc(g.type)}</span>` : ''}
-                      ${g.year ? `<span style="font-size:0.75rem;color:var(--text-muted);">${esc(g.year)}</span>` : ''}
-                      ${g.rating ? `<span style="font-size:0.75rem;color:#f59e0b;">★ ${esc(g.rating)}</span>` : ''}
-                      ${srcPills}
-                    </div>
-                  </div>
-                </div>
-                <div class="group-versions-list">
-                  ${g.items.map(it => {
-                    const srcCol = getSourceColor(it.source);
-                    const isMagnet = it.source === 'magnet' || (it.url && String(it.url).startsWith('magnet:'));
-                    const qTag = it.quality ? `<span style="color:#10b981;font-size:0.72rem;font-weight:600;">[${esc(it.quality)}]</span> ` : '';
-                    return `
-                      <div class="version-row">
-                        <div class="version-info">
-                          <span class="version-src" style="color:${srcCol};background:${srcCol}22;border:1px solid ${srcCol}55;">${esc(getSourceName(it.source))}</span>
-                          <span class="version-title" title="${esc(it.title)}">${qTag}${esc(it.title)}</span>
-                        </div>
-                        <div class="version-actions">
-                          <button type="button" class="btn btn-primary btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url)" style="padding:3px 8px;font-size:0.75rem;">复制</button>
-                          ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')" style="padding:3px 8px;font-size:0.75rem;">打开</button>`}
-                          <button type="button" class="btn btn-ghost btn-sm btn-report" onclick="event.stopPropagation();reportDeadLink(${Number(it.id)||0}, this)" title="失效报错" style="padding:3px 6px;font-size:0.72rem;">⚠️ 报错</button>
-                        </div>
-                      </div>`;
-                  }).join('')}
-                </div>
-              </article>`;
-          }).join('')}
-        </div>`;
-    } else {
-      contentHtml = `
-        <div class="search-card-grid">
-          ${results.map(r => {
-            const clean = cleanTitle(r.title);
-            const srcColor = getSourceColor(r.source);
-            const srcName = getSourceName(r.source);
-            const isMagnet = r.source === 'magnet' || (r.url && String(r.url).startsWith('magnet:'));
-            const meta = [r.type, r.year, r.quality].filter(Boolean).join(' · ');
-            return `
-              <article class="search-card">
-                <div class="search-card-top">
-                  <span class="search-card-source" style="color:${srcColor};background:${srcColor}22;border:1px solid ${srcColor}55">${esc(srcName)}</span>
-                  <div style="display:flex;gap:4px;">
-                    <button type="button" class="btn btn-ghost btn-sm btn-report" onclick="event.stopPropagation();reportDeadLink(${Number(r.id)||0}, this)" title="失效报错" style="font-size:0.7rem;padding:2px 5px;">⚠️ 报错</button>
-                    <button type="button" class="btn btn-ghost btn-sm fav-btn" data-id="${r.id || ''}" onclick="event.stopPropagation();toggleFavorite(this,${Number(r.id)||0})" title="收藏">♡</button>
-                  </div>
-                </div>
-                <div class="search-card-title" title="${esc(clean)}">${esc(clean)}</div>
-                ${meta ? `<div class="search-card-meta">${esc(meta)}</div>` : '<div class="search-card-meta">网盘资源</div>'}
-                <div class="search-card-actions">
-                  <button type="button" class="btn btn-primary btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url)">复制链接</button>
-                  ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')">打开</button>`}
-                </div>
-              </article>`;
-          }).join('')}
-        </div>`;
-    }
 
     container.innerHTML = `
       <div class="search-toolbar">
         <div class="search-toolbar-count">找到 <em>${total}</em> 条结果${isFiltered && chipTotal !== total ? ` <span style="font-size:.75rem;color:var(--text-secondary);font-weight:400">（筛选自 ${chipTotal} 条）</span>` : ''}</div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="search-view-toggle">
-            <button type="button" class="search-view-btn ${isAggregate ? 'active' : ''}" onclick="toggleViewMode('aggregate')">⚡ 聚合折叠</button>
-            <button type="button" class="search-view-btn ${!isAggregate ? 'active' : ''}" onclick="toggleViewMode('flat')">☰ 平铺列表</button>
-          </div>
-          <div class="search-toolbar-size">
-            每页
-            <select id="pageSizeSelect" onchange="changePageSize(this.value)">
-              ${[10,20,30,50].map(n => '<option value="' + n + '"' + (n === APP.pageSize ? ' selected' : '') + '>' + n + '</option>').join('')}
-            </select>
-            条
-          </div>
+        <div class="search-toolbar-size">
+          每页
+          <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+            ${[10,20,30,50].map(n => '<option value="' + n + '"' + (n === APP.pageSize ? ' selected' : '') + '>' + n + '</option>').join('')}
+          </select>
+          条
         </div>
       </div>
       <div class="search-source-chips">
         ${chipHtml('all', '全部', chipTotal, APP.sourceFilter === 'all')}
         ${sources.map(src => chipHtml(src, getSourceName(src), chipStats[src]||0, APP.sourceFilter === src)).join('')}
       </div>
-      ${contentHtml}
+      <div class="search-card-grid">
+        ${results.map(r => {
+          const clean = cleanTitle(r.title);
+          const srcColor = getSourceColor(r.source);
+          const srcName = getSourceName(r.source);
+          const isMagnet = r.source === 'magnet' || (r.url && String(r.url).startsWith('magnet:'));
+          const meta = [r.type, r.year, r.quality].filter(Boolean).join(' · ');
+          return `
+            <article class="search-card">
+              <div class="search-card-top">
+                <span class="search-card-source" style="color:${srcColor};background:${srcColor}22;border:1px solid ${srcColor}55">${esc(srcName)}</span>
+                <button type="button" class="btn btn-ghost btn-sm fav-btn" data-id="${r.id || ''}" onclick="event.stopPropagation();toggleFavorite(this,${Number(r.id)||0})" title="收藏">♡</button>
+              </div>
+              <div class="search-card-title" title="${esc(clean)}">${esc(clean)}</div>
+              ${meta ? `<div class="search-card-meta">${esc(meta)}</div>` : '<div class="search-card-meta">网盘资源</div>'}
+              <div class="search-card-actions">
+                <button type="button" class="btn btn-primary btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url)">复制链接</button>
+                ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')">打开</button>`}
+              </div>
+            </article>`;
+        }).join('')}
+      </div>
       ${totalPages > 1 ? `
         <div class="search-pager">
           <button type="button" onclick="goSearchPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹ 上一页</button>
@@ -4967,8 +4673,6 @@ async function loadAnimeCategory(el) {
   if (movieSub) movieSub.style.display = 'none';
   if (tvSub) tvSub.style.display = 'none';
 
-  const hdhiveSec = document.getElementById('hdhiveSections');
-  if (hdhiveSec) hdhiveSec.style.display = 'none';
   // 隐藏section-header和filter-bar
   document.querySelectorAll('.section-header').forEach(h => h.style.display = 'none');
   document.querySelectorAll('.filter-bar').forEach(b => b.style.display = 'none');
@@ -5027,9 +4731,6 @@ function filterCategory(type) {
   const tvSub = document.getElementById('tvSub');
   if (movieSub) movieSub.style.display = (type === 'movie') ? 'block' : 'none';
   if (tvSub) tvSub.style.display = (type === 'tv') ? 'block' : 'none';
-
-  const hdhiveSec = document.getElementById('hdhiveSections');
-  if (hdhiveSec) hdhiveSec.style.display = 'block';
 
   // 显示section-header和filter-bar
   document.querySelectorAll('.section-header').forEach(h => h.style.display = '');
@@ -5359,21 +5060,15 @@ document.getElementById('globalSearch')?.addEventListener('keydown', (e) => {
     const userArea = document.getElementById('userArea');
     if (userArea) {
       if (ud.logged_in) {
-        const name = (ud.nickname || ud.username || '用户').replace(/[<>&"']/g, '');
-        const roleBadge = ud.is_superadmin ? '👑' : (ud.is_admin ? '🛡️' : '⭐');
-        const points = ud.points || 0;
+        const name = (ud.username || '用户').replace(/[<>&"']/g, '');
         const homeLink = ud.is_admin
           ? `<a class="btn btn-ghost btn-sm" href="/admin" title="后台管理">管理</a>`
-          : ``;
+          : `<a class="btn btn-ghost btn-sm" href="/profile" title="我的收藏" onclick="return guardFavoritesNav(event)">我的</a>`;
         userArea.innerHTML = `
-          <div class="user-chip" style="display:inline-flex;align-items:center;gap:8px;">
+          <div class="user-chip">
             ${homeLink}
-            <a href="/profile" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;color:inherit;" title="进入个人中心">
-              <span class="badge-role" style="font-size:0.75rem;">${roleBadge}</span>
-              <span class="user-name" style="font-weight:600;color:var(--teal);">${name}</span>
-              <span style="font-size:0.72rem;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:999px;color:var(--text-secondary);">${points} 积分</span>
-            </a>
-            <a class="btn btn-ghost btn-sm btn-switch" href="/logout?next=/login" title="退出并换账号登录">换号</a>
+            <span class="user-name" title="${name}">${name}</span>
+            <a class="btn btn-ghost btn-sm btn-switch" href="/logout?next=/login" title="退出并换账号登录">换账号</a>
             <a class="btn btn-ghost btn-sm" href="/logout?next=/login">退出</a>
           </div>
         `;
@@ -5446,92 +5141,6 @@ document.getElementById('globalSearch')?.addEventListener('keydown', (e) => {
       }
     }
   } catch(e) {}
-
-// ==================== HDHIVE STYLE TOP 10 RANKINGS ====================
-async function loadHdhiveRankings() {
-  const tvContainer = document.getElementById('tvTop10Container');
-  const movieContainer = document.getElementById('movieTop10Container');
-  if (!tvContainer && !movieContainer) return;
-
-  const renderRankingSection = (container, items, isTv) => {
-    if (!container) return;
-    if (!items || !items.length) {
-      container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px 0;">暂无上新数据</div>';
-      return;
-    }
-
-    const top1 = items[0];
-    const rest = items.slice(1, 10);
-
-    const typeLabel = isTv ? '电视剧' : '电影';
-    const top1Title = esc(top1.title || '未知片名');
-    const top1Year = top1.year ? `${top1.year} · ` : '';
-    const top1Rating = top1.rating ? `★ ${top1.rating} · ` : '';
-    const top1Overview = esc(top1.overview || '暂无剧情简介，点击卡片直接搜索全网盘资源。');
-    const top1Img = top1.backdrop || top1.poster || '/favicon.svg';
-
-    let html = `
-      <!-- TOP 1 大卡片 -->
-      <div class="hdhive-spotlight-card" onclick="searchResource('${esc(top1.title)}')" style="background:var(--bg-card,#121212);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;margin-bottom:24px;cursor:pointer;display:grid;grid-template-columns:minmax(280px, 1.4fr) minmax(280px, 1fr);gap:24px;transition:transform 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='rgba(251,191,36,0.4)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none'">
-        <div style="position:relative;height:240px;overflow:hidden;background:#000;">
-          <img src="${top1Img}" alt="${top1Title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.src='/favicon.svg'">
-          <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%), linear-gradient(to right, transparent 60%, var(--bg-card,#121212) 100%);"></div>
-          <span style="position:absolute;bottom:8px;left:16px;font-family:var(--font-mono,'Sora');font-size:3.8rem;font-weight:900;color:#fbbf24;line-height:1;text-shadow:0 4px 16px rgba(0,0,0,0.8);user-select:none;">1</span>
-        </div>
-        <div style="padding:24px 24px 24px 0;display:flex;flex-direction:column;justify-content:center;">
-          <h3 style="font-size:1.45rem;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.02em;">${top1Title}</h3>
-          <div style="font-size:13px;color:var(--text-secondary,#a3a3a3);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-            <span style="color:#fbbf24;font-weight:600;">${top1Rating}</span>
-            <span>${top1Year}${typeLabel}</span>
-          </div>
-          <p style="font-size:13.5px;line-height:1.7;color:var(--text-muted,#737373);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:16px;">
-            ${top1Overview}
-          </p>
-          <div>
-            <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,0.12);color:#fbbf24;padding:6px 14px;border-radius:9999px;font-size:12.5px;font-weight:600;">🔍 点击立即找片</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TOP 2-10 海报小网格 -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:16px;">
-        ${rest.map((it, idx) => {
-          const rankNum = idx + 2;
-          const itTitle = esc(it.title || '');
-          const itRating = it.rating ? `★ ${it.rating}` : '★ 0';
-          const itYear = it.year ? `${it.year} · ` : '';
-          const itPoster = it.poster || it.backdrop || '/favicon.svg';
-          return `
-            <div class="hdhive-rank-card" onclick="searchResource('${itTitle}')" style="cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
-              <div style="position:relative;border-radius:12px;overflow:hidden;aspect-ratio:2/3;background:#181818;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);">
-                <img src="${itPoster}" alt="${itTitle}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.src='/favicon.svg'">
-                <!-- 左上角评分徽标 -->
-                <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);color:#fbbf24;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;">${itRating}</span>
-                <!-- 左下角醒目数字 -->
-                <span style="position:absolute;bottom:0;left:6px;font-family:var(--font-mono,'Sora');font-size:2rem;font-weight:900;color:#fbbf24;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.9);">${rankNum}</span>
-              </div>
-              <div style="font-size:13px;font-weight:600;color:#f5f5f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${itTitle}">${itTitle}</div>
-              <div style="font-size:11.5px;color:var(--text-muted,#737373);margin-top:2px;">${itYear}${typeLabel}</div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-
-    container.innerHTML = html;
-  };
-
-  try {
-    const [tvRes, movieRes] = await Promise.all([
-      fetch('/api/tmdb/trending?type=tv').then(r => r.json()).catch(() => ({ items: [] })),
-      fetch('/api/tmdb/trending?type=movie').then(r => r.json()).catch(() => ({ items: [] }))
-    ]);
-    renderRankingSection(tvContainer, tvRes.items || [], true);
-    renderRankingSection(movieContainer, movieRes.items || [], false);
-  } catch (e) {
-    console.error('Failed to load HDHive style rankings:', e);
-  }
-}
 
   // 并行加载热门影视海报墙（v20260807_1937: 精简首页，去掉轮播+最新收录）
   await Promise.all([
@@ -5662,18 +5271,3 @@ function showSkeleton(containerId, count = 6) {
 
 </body>
 </html>
-<script>
-
-// 检测 IP 归属地，仅境外 IP 显示 TG 相关社群入口
-(async function initGeoDisplay() {
-  try {
-    const r = await fetch('/api/telegram/login-config');
-    const cfg = await r.json();
-    if (cfg && cfg.enabled && cfg.is_foreign) {
-      const ftg = document.getElementById('footerTgLinks');
-      if (ftg) ftg.style.display = 'flex';
-    }
-  } catch(e) {}
-})();
-
-</script>

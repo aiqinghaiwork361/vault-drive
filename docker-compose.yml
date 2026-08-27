@@ -9,6 +9,7 @@ services:
       - .env
     environment:
       - TZ=Asia/Shanghai
+      - REQUIRE_LOGIN=0
       - HTTPS_PROXY=http://192.168.0.201:7890
       - HTTP_PROXY=http://192.168.0.201:7890
       - NO_PROXY=localhost,127.0.0.1,resource_web_redis,resource-mysql,192.168.0.201,::1

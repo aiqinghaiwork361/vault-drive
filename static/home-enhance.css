@@ -1,0 +1,808 @@
+/* VaultDrive home enhance — sections / badges / drawer / PWA polish */
+:root {
+  --home-accent: #2dd4bf;
+  --home-badge-live: #2dd4bf;
+  --home-badge-none: #737373;
+  --home-badge-dead: #f87171;
+  --home-badge-mixed: #fbbf24;
+}
+
+.home-rail {
+  margin: 0 0 28px;
+  padding: 0 4px;
+}
+.home-rail + .home-rail { margin-top: 8px; }
+.home-rail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.home-rail-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+.home-rail-head p {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.home-rail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.home-personal {
+  background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0 4px 22px;
+}
+.home-personal.hidden { display: none; }
+.home-personal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.home-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.home-pill:hover {
+  background: rgba(45,212,191,0.12);
+  border-color: rgba(45,212,191,0.35);
+  color: var(--text-primary);
+}
+.home-pill strong { color: var(--home-accent); font-weight: 650; }
+
+.home-hscroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.home-hscroll::-webkit-scrollbar { height: 4px; }
+.home-hscroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+}
+.home-chip-card {
+  flex: 0 0 auto;
+  width: 92px;
+  scroll-snap-align: start;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s;
+}
+.home-chip-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(45,212,191,0.35);
+}
+.home-chip-card .thumb {
+  aspect-ratio: 2/3;
+  background: #111;
+  position: relative;
+  overflow: hidden;
+}
+.home-chip-card .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.home-chip-card .meta {
+  padding: 6px 6px 8px;
+}
+.home-chip-card .meta .t {
+  font-size: 0.68rem;
+  color: var(--text-primary);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.home-chip-card .meta .s {
+  margin-top: 4px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.home-hot-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.home-hot-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.home-hot-chip:hover {
+  color: var(--text-primary);
+  border-color: rgba(45,212,191,0.4);
+}
+.home-hot-chip .n {
+  margin-left: 6px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* 海报角标：收藏按钮正下方，不挡底部片名 */
+.poster-badges {
+  position: absolute;
+  left: 8px;
+  right: auto;
+  top: 46px;
+  bottom: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  z-index: 4;
+  pointer-events: none;
+}
+.poster-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.78);
+  color: #fff;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.poster-badge.live { color: var(--home-badge-live); }
+.poster-badge.none { color: var(--home-badge-none); }
+.poster-badge.dead { color: var(--home-badge-dead); }
+.poster-badge.mixed { color: var(--home-badge-mixed); }
+
+/* 详情抽屉 */
+.detail-drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.62);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.detail-drawer-mask.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.detail-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(440px, 100vw);
+  background: #0a0a0a;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  z-index: 91;
+  transform: translateX(104%);
+  transition: transform .28s cubic-bezier(.2,.8,.2,1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0,0,0,0.55);
+}
+.detail-drawer.open { transform: translateX(0); }
+.detail-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.detail-drawer-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.detail-drawer-head .sub {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.detail-drawer-close {
+  border: 0;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.detail-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 28px;
+}
+.detail-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 8px;
+}
+.detail-link .src {
+  font-size: 0.72rem;
+  font-weight: 650;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(45,212,191,0.12);
+  color: var(--home-accent);
+}
+.detail-link .info .t {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.detail-link .info .m {
+  margin-top: 3px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.detail-link .go {
+  font-size: 0.75rem;
+  color: var(--home-accent);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(45,212,191,0.1);
+}
+.detail-link.is-dead {
+  opacity: 0.55;
+}
+.detail-empty {
+  text-align: center;
+  padding: 40px 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0 16px;
+}
+.detail-actions button {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.detail-actions button.primary {
+  background: rgba(45,212,191,0.16);
+  border-color: rgba(45,212,191,0.35);
+  color: var(--home-accent);
+}
+
+/* 搜索增强：历史 + 网盘筛选 + 联想 */
+.home-search-tools {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(560px, 100%);
+}
+.home-source-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.home-source-filters .sf {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+}
+.home-source-filters .sf.active {
+  color: #041210;
+  background: var(--home-accent);
+  border-color: transparent;
+  font-weight: 650;
+}
+.home-ac-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #121212;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  z-index: 20;
+  overflow: hidden;
+  display: none;
+  text-align: left;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+}
+.home-ac-panel.open { display: block; }
+.home-ac-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.home-ac-item:hover, .home-ac-item.active {
+  background: rgba(45,212,191,0.1);
+  color: var(--text-primary);
+}
+.home-search-box { position: relative; }
+.home-hist-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.home-hist-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border: 1px dashed rgba(255,255,255,0.14);
+  cursor: pointer;
+}
+.home-hist-chip:hover { color: var(--text-primary); }
+
+.home-skel-row {
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+.home-skel {
+  flex: 0 0 92px;
+  height: 160px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #141414, #1c1c1c, #141414);
+  background-size: 200% 100%;
+  animation: homeSkel 1.2s ease-in-out infinite;
+}
+@keyframes homeSkel {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.home-chip-ph {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: linear-gradient(160deg, #1a1a1a, #101010);
+  color: rgba(255,255,255,0.35);
+  font-size: 1.1rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+.detail-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.detail-filters button {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.detail-filters button.active {
+  color: #041210;
+  background: var(--home-accent);
+  border-color: transparent;
+  font-weight: 650;
+}
+
+@media (max-width: 720px) {
+  .home-chip-card { width: 84px; }
+  .detail-drawer { width: 100vw; }
+  .home-personal { margin-left: 0; margin-right: 0; }
+}
+
+/* PWA install hint */
+.pwa-hint {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 16px;
+  z-index: 80;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(18,18,18,0.94);
+  border: 1px solid rgba(45,212,191,0.3);
+  backdrop-filter: blur(10px);
+}
+.pwa-hint.show { display: flex; }
+.pwa-hint button {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.pwa-hint .ok {
+  background: var(--home-accent);
+  color: #041210;
+  font-weight: 650;
+}
+.pwa-hint .no {
+  background: transparent;
+  color: var(--text-muted);
+}
+/* ============================================================
+   HDHive 影巢风 强化层 — v20260823_0258
+   方向：深色科技 + 毛玻璃 + 青蓝渐变 + 微发光，克制但有光感
+   只覆盖/增强，不删除原始样式
+   ============================================================ */
+
+/* 1. 背景：网格线 + 径向光晕（极淡，不抢戏） */
+#app,
+body {
+  background-color: #000 !important;
+}
+
+/* 网格层 — 铺在最底层，用伪元素挂在 app 上 */
+#app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(45, 212, 191, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 212, 191, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  mask-image: radial-gradient(ellipse at 50% 30%, rgba(0,0,0,0.9), rgba(0,0,0,0.15) 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, rgba(0,0,0,0.9), rgba(0,0,0,0.15) 70%, transparent 100%);
+}
+
+/* 顶部光晕 — 让头部区域有轻微冷光 */
+#app::after {
+  content: "";
+  position: fixed;
+  top: -30%;
+  left: 20%;
+  right: 20%;
+  height: 60vh;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+      rgba(45, 212, 191, 0.10) 0%,
+      rgba(56, 189, 248, 0.05) 35%,
+      transparent 70%);
+  filter: blur(20px);
+}
+
+/* 主色调覆盖：把 --green 金色替换为青蓝渐变主色（局部覆盖） */
+:root {
+  --accent-cyan: #2dd4bf;
+  --accent-blue: #38bdf8;
+  --accent-cyan-dim: rgba(45, 212, 191, 0.22);
+  --accent-blue-dim: rgba(56, 189, 248, 0.18);
+  --accent-glow: 0 0 18px rgba(45, 212, 191, 0.45), 0 0 32px rgba(56, 189, 248, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-blur: 16px;
+  --radius-hd: 16px;
+  --radius-hd-lg: 22px;
+}
+
+/* 2. 毛玻璃卡片：section-title 下方所有内容容器 */
+.home-rail,
+.home-personal,
+.hero-feature,
+.home-search-box,
+.detail-drawer {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* 所有卡片统一：毛玻璃 + 大圆角 + 细边框 */
+.home-rail {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-hd-lg);
+  padding: 16px 18px;
+}
+.home-personal {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-hd-lg);
+  padding: 14px 16px;
+}
+
+/* 海报/芯片卡片：更强毛玻璃 + 悬停发光 */
+.poster-card,
+.home-chip-card,
+.poster-card .poster-inner,
+.poster-card:hover {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.poster-card {
+  border-radius: var(--radius-hd);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1),
+              border-color .22s,
+              box-shadow .22s;
+}
+.poster-card:hover {
+  transform: translateY(-4px) scale(1.015);
+  border-color: rgba(45, 212, 191, 0.42);
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.30),
+              0 12px 28px rgba(45, 212, 191, 0.14),
+              0 24px 48px rgba(0, 0, 0, 0.65);
+}
+.home-chip-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-hd);
+}
+.home-chip-card:hover {
+  border-color: rgba(45, 212, 191, 0.42);
+  box-shadow: var(--accent-glow);
+  transform: translateY(-3px);
+}
+
+/* TOP10 大卡片：强化毛玻璃 + 左侧大数字渐变 */
+#sectionTvTop10,
+#sectionMovieTop10 {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-hd-lg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+.top10-row,
+.movie-top10-row,
+.tv-top10-row {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-hd);
+  transition: all .22s;
+}
+.top10-row:hover,
+.movie-top10-row:hover,
+.tv-top10-row:hover {
+  background: rgba(45, 212, 191, 0.07);
+  border-color: rgba(45, 212, 191, 0.35);
+}
+.top10-num,
+.top10-row .rank,
+.movie-top10-row .rank,
+.tv-top10-row .rank {
+  background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 24px rgba(45, 212, 191, 0.35);
+  font-weight: 700;
+}
+
+/* 3. 按钮：主按钮青蓝渐变 + 发光 */
+.btn-primary,
+.home-search-btn {
+  background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 60%, #60a5fa 100%) !important;
+  color: #000 !important;
+  border: 0 !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.02em;
+  box-shadow: var(--accent-glow), 0 8px 24px rgba(45, 212, 191, 0.20);
+  transition: transform .18s, box-shadow .18s, filter .18s;
+}
+.btn-primary:hover,
+.home-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(45, 212, 191, 0.6), 0 0 48px rgba(56, 189, 248, 0.35), 0 12px 32px rgba(45, 212, 191, 0.28);
+  filter: brightness(1.08);
+}
+.btn-primary:active,
+.home-search-btn:active {
+  transform: translateY(0);
+}
+
+/* ghost 按钮：半透明 + 细边框 */
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text-secondary);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all .18s;
+}
+.btn-ghost:hover {
+  background: rgba(45, 212, 191, 0.10);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: var(--text-primary);
+  box-shadow: 0 0 12px rgba(45, 212, 191, 0.20);
+}
+
+/* 4. 搜索框：浮起 + 内阴影 + 青蓝边框 */
+.home-search-box,
+.search-global {
+  background: rgba(10, 10, 10, 0.75) !important;
+  border: 1px solid rgba(45, 212, 191, 0.28) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+              0 4px 16px rgba(0, 0, 0, 0.5),
+              0 0 0 3px rgba(45, 212, 191, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color .2s, box-shadow .2s;
+}
+.home-search-box:focus-within,
+.search-global:focus-within {
+  border-color: rgba(45, 212, 191, 0.6) !important;
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.15),
+              0 0 20px rgba(45, 212, 191, 0.25),
+              0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* 5. Hero 标题 & logo：微发光 + 渐变 */
+.brand-mark,
+.home-search-title {
+  background: linear-gradient(135deg, #f5f5f5 0%, #2dd4bf 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 30px rgba(45, 212, 191, 0.25);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Hero 底图遮罩加深 + 冷光晕 */
+.archive-hero-veil {
+  background: linear-gradient(180deg,
+      rgba(0,0,0,0.65) 0%,
+      rgba(0,0,0,0.85) 60%,
+      rgba(0,0,0,0.98) 100%) !important;
+}
+.archive-hero-bg {
+  opacity: 0.45;
+  filter: saturate(1.05) contrast(1.05);
+}
+.archive-hero-content {
+  box-shadow: 0 0 80px rgba(45, 212, 191, 0.10);
+}
+
+/* 6. Section 标题：左侧细竖条 + 渐变发光 */
+.section-title {
+  position: relative;
+  padding-left: 14px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2dd4bf, #38bdf8);
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.5);
+}
+
+/* 7. 胶囊/标签：更精致的毛玻璃 */
+.home-pill,
+.home-hot-chip,
+.poster-badge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 999px;
+  transition: all .18s;
+}
+.home-pill:hover,
+.home-hot-chip:hover {
+  background: rgba(45, 212, 191, 0.10);
+  border-color: rgba(45, 212, 191, 0.40);
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.18);
+}
+
+/* 8. 顶部导航栏：毛玻璃 + 细底边 */
+.header {
+  background: rgba(0, 0, 0, 0.72) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 1px 0 rgba(45, 212, 191, 0.08);
+}
+
+/* 9. 细节：滚动条 + 链接 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(45, 212, 191, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 212, 191, 0.45);
+}
+
+/* 10. 抽屉：更精致的毛玻璃 */
+.detail-drawer {
+  background: rgba(10, 10, 10, 0.95) !important;
+  border-left: 1px solid rgba(45, 212, 191, 0.15);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(45, 212, 191, 0.06);
+}
+
+/* 11. 页面淡入 */
+@keyframes hdhive-fadein {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#page-home,
+#page-search {
+  animation: hdhive-fadein .35s cubic-bezier(.2,.8,.2,1);
+}

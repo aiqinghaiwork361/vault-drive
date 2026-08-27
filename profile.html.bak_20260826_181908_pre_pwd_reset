@@ -551,31 +551,11 @@ header {
           <label>用户昵称</label>
           <input class="form-input" id="setNickname" placeholder="显示昵称">
         </div>
-        <button class="btn btn-primary" onclick="saveProfile()">保存昵称</button>
-      </div>
-
-      <!-- 绑定与换绑邮箱 -->
-      <div class="settings-card">
-        <h3>邮箱安全绑定</h3>
         <div class="form-item">
-          <label>当前绑定邮箱</label>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface-2);border-radius:8px;font-size:13px;">
-            <span id="currentEmailDisplay" style="color:var(--ink);font-family:var(--font-mono);">未绑定</span>
-            <span id="emailBadge" class="badge badge-b">未验证</span>
-          </div>
+          <label>电子邮箱</label>
+          <input class="form-input" id="setEmail" placeholder="接收通知邮箱">
         </div>
-        <div class="form-item" style="margin-top:12px;">
-          <label>新邮箱地址</label>
-          <input class="form-input" id="newBindEmail" placeholder="输入要绑定或更换的邮箱">
-        </div>
-        <div class="form-item">
-          <label>邮箱验证码</label>
-          <div style="display:flex;gap:8px;">
-            <input class="form-input" id="newBindCode" placeholder="6位验证码" style="flex:1;" maxlength="6">
-            <button class="btn btn-ghost btn-sm" id="btnSendBindCode" onclick="sendBindEmailCode()" style="flex-shrink:0;">获取验证码</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="submitBindEmail()">确认绑定邮箱</button>
+        <button class="btn btn-primary" onclick="saveProfile()">保存资料</button>
       </div>
 
       <!-- 修改密码 -->
@@ -593,9 +573,9 @@ header {
       </div>
 
       <!-- 第三方绑定 -->
-      <div class="settings-card" id="thirdPartyBindCard">
+      <div class="settings-card">
         <h3>多平台账号绑定</h3>
-        <div class="form-item" id="tgBindFormItem">
+        <div class="form-item">
           <label>Telegram 账号</label>
           <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--hairline);">
             <span id="tgStatusText" style="font-size:13px;font-weight:500;">未绑定</span>
@@ -603,7 +583,7 @@ header {
           </div>
           <div id="tgBindHint" style="font-size:12px;color:var(--ink-subtle);margin-top:6px;display:none;"></div>
         </div>
-        <div class="form-item" id="ghBindFormItem" style="margin-top:20px;">
+        <div class="form-item" style="margin-top:20px;">
           <label>GitHub 账号</label>
           <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--hairline);">
             <span id="ghStatusText" style="font-size:13px;font-weight:500;">未绑定</span>
@@ -661,19 +641,7 @@ async function loadUserMe() {
     document.getElementById('subCount').textContent = d.subscriptions_count || 0;
 
     if (document.getElementById('setNickname')) document.getElementById('setNickname').value = d.nickname || '';
-    const curEmail = d.email || '';
-    const emailDisp = document.getElementById('currentEmailDisplay');
-    const emailBadge = document.getElementById('emailBadge');
-    if (emailDisp) emailDisp.textContent = curEmail || '未绑定';
-    if (emailBadge) {
-      if (curEmail) {
-        emailBadge.textContent = '已安全绑定 ✓';
-        emailBadge.className = 'badge badge-g';
-      } else {
-        emailBadge.textContent = '未绑定';
-        emailBadge.className = 'badge badge-r';
-      }
-    }
+    if (document.getElementById('setEmail')) document.getElementById('setEmail').value = d.email || '';
 
     const tgTxt = document.getElementById('tgStatusText');
     const tgAct = document.getElementById('tgActions');
@@ -694,28 +662,6 @@ async function loadUserMe() {
       ghTxt.textContent = '未绑定';
       ghAct.innerHTML = `<a class="btn btn-primary btn-sm" href="/login/github?bind=1&next=/profile">绑定账号</a>`;
     }
-
-    // 国内 IP 与 第三方绑定控制
-    try {
-      const cfgResp = await fetch('/api/telegram/login-config');
-      const cfg = await cfgResp.json();
-      const tgFormItem = document.getElementById('tgBindFormItem');
-      const ghFormItem = document.getElementById('ghBindFormItem');
-      const thirdPartyCard = document.getElementById('thirdPartyBindCard');
-
-      // 若未绑定 Telegram 且处于国内 IP 环境，隐藏 Telegram 绑定条目
-      const showTg = Boolean(d.telegram_id || (cfg.enabled && cfg.is_foreign));
-      if (tgFormItem) tgFormItem.style.display = showTg ? 'block' : 'none';
-
-      // GitHub 绑定条目检测
-      const showGh = Boolean(d.github_id || cfg.github_enabled);
-      if (ghFormItem) ghFormItem.style.display = showGh ? 'block' : 'none';
-
-      // 若 Telegram 与 GitHub 都隐藏，隐藏整个卡片
-      if (thirdPartyCard) {
-        thirdPartyCard.style.display = (showTg || showGh) ? 'block' : 'none';
-      }
-    } catch(e) {}
     // 签到按钮状态初始化
     const btn = document.getElementById('checkinBtn');
     if (btn) {
@@ -1026,79 +972,3 @@ window.onload = init;
 </script>
 </body>
 </html>
-
-<script>
-
-var _bindCodeCountdown = 0;
-var _bindCodeTimer = null;
-
-async function sendBindEmailCode() {
-  const email = (document.getElementById('newBindEmail')?.value || '').trim();
-  if (!email || !email.includes('@')) return showToast('请输入有效邮箱', 'error');
-  if (_bindCodeCountdown > 0) return;
-
-  const btn = document.getElementById('btnSendBindCode');
-  btn.disabled = true;
-  btn.textContent = '发送中…';
-
-  try {
-    const r = await fetch('/api/auth/email/send-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, action: 'bind' })
-    });
-    const d = await r.json();
-    if (r.ok && d.ok) {
-      showToast('验证码已发送至新邮箱');
-      _bindCodeCountdown = 60;
-      btn.textContent = _bindCodeCountdown + 's';
-      if (_bindCodeTimer) clearInterval(_bindCodeTimer);
-      _bindCodeTimer = setInterval(function() {
-        _bindCodeCountdown--;
-        if (_bindCodeCountdown <= 0) {
-          clearInterval(_bindCodeTimer);
-          btn.disabled = false;
-          btn.textContent = '重新获取';
-        } else {
-          btn.textContent = _bindCodeCountdown + 's';
-        }
-      }, 1000);
-      document.getElementById('newBindCode')?.focus();
-    } else {
-      showToast(d.error || '发送失败', 'error');
-      btn.disabled = false;
-      btn.textContent = '获取验证码';
-    }
-  } catch(e) {
-    showToast('网络错误', 'error');
-    btn.disabled = false;
-    btn.textContent = '获取验证码';
-  }
-}
-
-async function submitBindEmail() {
-  const email = (document.getElementById('newBindEmail')?.value || '').trim();
-  const code = (document.getElementById('newBindCode')?.value || '').trim();
-  if (!email || !code) return showToast('请填写完整邮箱与验证码', 'error');
-
-  try {
-    const r = await fetch('/api/user/bind-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code })
-    });
-    const d = await r.json();
-    if (r.ok && d.ok) {
-      showToast(d.message || '邮箱绑定成功！');
-      document.getElementById('newBindEmail').value = '';
-      document.getElementById('newBindCode').value = '';
-      loadUserMe();
-    } else {
-      showToast(d.error || '绑定失败', 'error');
-    }
-  } catch(e) {
-    showToast('请求失败', 'error');
-  }
-}
-
-</script>

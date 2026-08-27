@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>登录 · VaultDrive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Sora:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f5f5f5;
+  --muted: #a3a3a3;
+  --faint: #737373;
+  --card: rgba(18, 18, 18, 0.92);
+  --border: rgba(255, 255, 255, 0.12);
+  --teal: #2dd4bf;
+  --teal-dim: #14b8a6;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: 'Fraunces', 'Noto Sans SC', Georgia, serif;
+  --font-body: 'Sora', 'Noto Sans SC', sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: auto;
+  padding: 2.5rem 0 3.5rem;
+  -webkit-font-smoothing: antialiased;
+  background: #000000;
+}
+.stage {
+  position: fixed;
+  inset: -6%;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 18% 28%, rgba(45, 212, 191, 0.10), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 82% 72%, rgba(255, 255, 255, 0.03), transparent 55%),
+    linear-gradient(160deg, #000000 0%, #050505 48%, #000000 100%);
+  background-size: 120% 120%;
+  animation: drift 28s ease-in-out infinite alternate;
+}
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 72px 96px;
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 45%, #000 15%, transparent 75%);
+  pointer-events: none;
+}
+@keyframes drift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to { transform: translate3d(-2%, 1.2%, 0) scale(1.05); }
+}
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.78) 70%);
+  pointer-events: none;
+}
+.login-card {
+  position: relative;
+  z-index: 10;
+  width: min(440px, calc(100% - 2rem));
+  padding: 2.2rem 1.85rem 1.85rem;
+  background: var(--card);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 24px 48px rgba(0,0,0,0.65);
+  animation: rise 0.75s var(--ease) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.logo-area { text-align: center; margin-bottom: 1.75rem; }
+.kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.logo-area h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 8vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  animation: breath 6s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { letter-spacing: -0.04em; }
+  50% { letter-spacing: -0.028em; }
+}
+.logo-area p {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.error-msg {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: none;
+}
+.input-group {
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+.input-group input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #121212;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.input-group input::placeholder { color: var(--faint); }
+.input-group input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18);
+}
+.input-group i { display: none; }
+.btn-wrap { margin-top: 0.85rem; }
+.btn-login, .btn-github, .btn-tg {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.25s var(--ease), background 0.2s ease, border-color 0.2s ease;
+}
+.btn-login {
+  background: var(--teal);
+  color: #000;
+}
+.btn-login:hover { background: var(--teal-dim); transform: translateY(-1px); }
+.btn-login:disabled { opacity: 0.7; cursor: wait; transform: none; }
+.btn-tg {
+  background: #2AABEE;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+.btn-tg:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.btn-tg:disabled { opacity: 0.75; cursor: wait; transform: none; }
+.btn-github {
+  background: #121212;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  margin-bottom: 0.35rem;
+}
+.btn-github:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+  transform: translateY(-1px);
+}
+.tg-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0.35rem 0 0.5rem;
+  min-height: 0;
+}
+.tg-hint {
+  font-size: 0.75rem;
+  color: var(--faint);
+  text-align: center;
+  line-height: 1.45;
+}
+.tg-hint a { color: var(--teal); }
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0.85rem 0;
+  color: var(--faint);
+  font-size: 0.75rem;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 1.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.back-link:hover { color: var(--teal); }
+.growth-box {
+  margin: 0 0 1.2rem;
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: 14px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+  background: linear-gradient(160deg, rgba(45, 212, 191, 0.10), rgba(0, 0, 0, 0.28));
+}
+.growth-box strong { color: var(--ink); font-weight: 650; display: block; margin-bottom: 8px; font-size: 0.9rem; }
+.growth-box a { color: var(--teal); text-decoration: none; }
+.growth-box a:hover { text-decoration: underline; }
+.growth-box .dev {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.68rem;
+  color: var(--faint);
+  border: 1px solid var(--border);
+  padding: 0 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+.growth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.growth-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+}
+.growth-btn:hover { color: var(--teal) !important; text-decoration: none !important; }
+.growth-btn.primary {
+  background: var(--teal);
+  color: #04110e !important;
+  border-color: transparent;
+}
+.growth-note { margin: 8px 0 0; font-size: 0.72rem; color: var(--faint); }
+.login-footer {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 0; right: 0;
+  text-align: center;
+  z-index: 10;
+  font-size: 0.72rem;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
+@media (max-width: 480px) {
+  .login-card { padding: 2rem 1.35rem 1.6rem; }
+}
+</style>
+<script src="/site-settings.js"></script>
+</head>
+<body>
+<div class="stage" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
+
+<div class="login-card">
+  <div class="logo-area">
+    <div class="kicker">黑矿场内测</div>
+    <h1>VaultDrive</h1>
+    <p>先进群，收藏才开放 · 搜索可直接用</p>
+  </div>
+
+  <div class="error-msg" id="err"></div>
+
+  <div class="growth-box" id="growthBox">
+    <strong>黑矿场资源内测：先进群</strong>
+    私聊 <a href="https://t.me/tg38haokuangchang_bot" target="_blank" rel="noopener" id="gBot">@tg38haokuangchang_bot</a> 发片名搜片<span class="dev">开发中</span>。<br>
+    网站 <a href="https://vault.aaaaaaaa.host/" target="_blank" rel="noopener" id="gSite">https://vault.aaaaaaaa.host/</a><br>
+    频道 <a href="https://t.me/heikuangchang" target="_blank" rel="noopener" id="gChannel">@heikuangchang</a>
+    <div class="growth-links">
+      <a class="growth-btn primary" href="https://t.me/heikuangchangshare" target="_blank" rel="noopener" id="gGroup">进群</a>
+      <a class="growth-btn primary" href="https://t.me/tg38haokuangchang_bot" target="_blank" rel="noopener" id="gBotBtn">搜片 Bot</a>
+      <a class="growth-btn" href="https://t.me/heikuangchang" target="_blank" rel="noopener" id="gChannelBtn">频道</a>
+      <a class="growth-btn" href="https://vault.aaaaaaaa.host/" target="_blank" rel="noopener" id="gSiteBtn">网站</a>
+    </div>
+    <p class="growth-note">未进群不能使用收藏 · 搜索可直接用</p>
+  </div>
+
+  <div class="btn-wrap" style="margin-top:0">
+    <button type="button" class="btn-tg" id="tgBotLoginBtn" onclick="startTelegramBotLogin()">使用 Telegram 登录 @vaultdrive_bot</button>
+  </div>
+  <div class="tg-wrap" id="tgLoginWrap">
+    <div class="tg-hint" id="tgHint"></div>
+  </div>
+
+  <div class="divider">或</div>
+
+  <div class="btn-wrap" style="margin-top:0">
+    <button type="button" class="btn-github" onclick="doGithubLogin()">使用 GitHub 登录</button>
+  </div>
+
+  <div class="divider">账号登录 / 注册</div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;background:rgba(255,255,255,0.05);padding:4px;border-radius:10px;">
+    <button type="button" id="tabLogin" onclick="switchAuthTab('login')" style="flex:1;padding:6px;border:none;border-radius:8px;background:var(--teal);color:#000;font-weight:600;font-size:0.82rem;cursor:pointer;">登录</button>
+    <button type="button" id="tabRegister" onclick="switchAuthTab('register')" style="flex:1;padding:6px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:0.82rem;cursor:pointer;">注册</button>
+  </div>
+
+  <div class="input-group">
+    <input id="u" placeholder="用户名 (3-30字符)" autofocus onkeydown="if(event.key==='Enter')document.getElementById('p').focus()">
+  </div>
+  <div class="input-group">
+    <input id="p" type="password" placeholder="密码 (至少6位)" onkeydown="if(event.key==='Enter')handleAuthSubmit()">
+  </div>
+  <div class="input-group" id="inviteGroup" style="display:none;">
+    <input id="inv" placeholder="邀请码 (可选)">
+  </div>
+
+  <input type="hidden" id="csrf_token" name="csrf_token" value="">
+
+  <div class="btn-wrap">
+    <button class="btn-login" id="authSubmitBtn" onclick="handleAuthSubmit()">登录</button>
+  </div>
+
+  <a href="/" class="back-link">← 返回首页</a>
+</div>
+
+<div class="login-footer">VaultDrive · Pure Black</div>
+
+<script>
+(function showUrlError() {
+  var m = location.search.match(/[?&]error=([^&]+)/);
+  if (!m) return;
+  var err = document.getElementById('err');
+  err.style.display = 'block';
+  err.textContent = decodeURIComponent(m[1].replace(/^tg_/, ''));
+})();
+
+function loginNextUrl(role) {
+  var m = location.search.match(/[?&]next=([^&]+)/);
+  var next = '/';
+  if (m) {
+    try {
+      var u = decodeURIComponent(m[1]);
+      if (u.startsWith('/') && !u.startsWith('//') && u.indexOf('\\') < 0 && !u.startsWith('/login')) {
+        next = u.slice(0, 500);
+      }
+    } catch (e) {}
+  }
+  if ((role === 'admin' || role === 'superadmin') && (next === '/' || !next)) return '/admin';
+  return next || '/';
+}
+
+async function onTelegramAuth(user) {
+  var err = document.getElementById('err');
+  err.style.display = 'none';
+  try {
+    var csrfResp = await fetch('/api/csrf-token');
+    var csrfData = await csrfResp.json();
+    var csrfToken = csrfData.csrf_token;
+    var r = await fetch('/login/telegram', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify(Object.assign({}, user, { csrf_token: csrfToken }))
+    });
+    var d = await r.json();
+    if (r.ok && d.ok) {
+      location.href = loginNextUrl(d.role);
+    } else {
+      err.style.display = 'block';
+      err.textContent = d.error || 'Telegram 登录失败';
+    }
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = '网络错误，请重试';
+  }
+}
+window.onTelegramAuth = onTelegramAuth;
+
+var _tgLoginPoll = null;
+async function startTelegramBotLogin() {
+  var err = document.getElementById('err');
+  var hint = document.getElementById('tgHint');
+  var btn = document.getElementById('tgBotLoginBtn');
+  err.style.display = 'none';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = '打开 Bot 中…'; }
+    var csrfResp = await fetch('/api/csrf-token');
+    var csrfData = await csrfResp.json();
+    var r = await fetch('/api/auth/telegram/login-code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfData.csrf_token || ''
+      },
+      body: '{}'
+    });
+    var d = await r.json();
+    if (d.already) {
+      location.href = loginNextUrl();
+      return;
+    }
+    if (!r.ok || !d.ok) {
+      err.style.display = 'block';
+      err.textContent = d.error || '无法启动 Telegram 登录';
+      if (btn) { btn.disabled = false; btn.textContent = '使用 Telegram 登录'; }
+      return;
+    }
+    if (hint) {
+      hint.innerHTML = '请在 Telegram 打开 <a href="' + d.deep_link + '" target="_blank" rel="noopener">@' + d.bot_username + '</a> 确认登录<br>确认后本页会自动跳转';
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '再次打开 Bot';
+      btn.onclick = function () { window.open(d.deep_link, '_blank', 'noopener'); };
+    }
+    window.open(d.deep_link, '_blank', 'noopener');
+    if (_tgLoginPoll) clearInterval(_tgLoginPoll);
+    var n = 0;
+    _tgLoginPoll = setInterval(async function () {
+      n += 1;
+      try {
+        var pr = await fetch('/api/auth/telegram/login-poll?code=' + encodeURIComponent(d.code));
+        var pd = await pr.json();
+        if (pd.status === 'ready') {
+          clearInterval(_tgLoginPoll);
+          var csrf2 = await fetch('/api/csrf-token').then(function (x) { return x.json(); });
+          var cr = await fetch('/api/auth/telegram/login-complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrf2.csrf_token || ''
+            },
+            body: JSON.stringify({ code: d.code })
+          });
+          var cd = await cr.json();
+          if (cr.ok && cd.ok) {
+            location.href = loginNextUrl(cd.role);
+          } else {
+            err.style.display = 'block';
+            err.textContent = cd.error || '登录完成失败';
+            if (btn) btn.textContent = '使用 Telegram 登录';
+          }
+        } else if (pd.status === 'expired') {
+          clearInterval(_tgLoginPoll);
+          if (hint) hint.textContent = '登录码已过期，请重新点击 Telegram 登录';
+          if (btn) {
+            btn.textContent = '使用 Telegram 登录';
+            btn.onclick = startTelegramBotLogin;
+          }
+        }
+      } catch (e) {}
+      if (n >= 100) clearInterval(_tgLoginPoll);
+    }, 2000);
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = '网络错误，请重试';
+    if (btn) { btn.disabled = false; btn.textContent = '使用 Telegram 登录'; }
+  }
+}
+
+async function initTelegramLogin() {
+  // 只用 Bot 深链登录，不挂官方 Login Widget（未 /setdomain 时会露出「Bot domain invalid」）
+  var hint = document.getElementById('tgHint');
+  try {
+    var r = await fetch('/api/telegram/login-config');
+    var cfg = await r.json();
+    if (!cfg.enabled || !cfg.bot_username) {
+      var btn = document.getElementById('tgBotLoginBtn');
+      if (btn) btn.disabled = true;
+      if (hint) hint.textContent = cfg.hint || 'Telegram 登录未启用（需配置 Bot）';
+      return;
+    }
+    var loginBot = cfg.login_bot || cfg.bot_username || 'vaultdrive_bot';
+    var btn = document.getElementById('tgBotLoginBtn');
+    if (btn) btn.textContent = '使用 Telegram 登录 @' + loginBot;
+    if (hint && cfg.required_chat_link) {
+      hint.innerHTML = '登录走 <a href="https://t.me/' + loginBot + '" target="_blank" rel="noopener">@' + loginBot + '</a> · 仅 <a href="' + cfg.required_chat_link + '" target="_blank" rel="noopener">' + (cfg.required_chat || '指定群') + '</a> 成员可登录';
+    }
+    var g = cfg.growth;
+    if (g) {
+      var set = function(id, href, text) {
+        var el = document.getElementById(id);
+        if (!el || !href) return;
+        el.href = href;
+        if (text) el.textContent = text;
+      };
+      set('gGroup', g.group_link, '进群');
+      set('gChannel', g.channel_link, g.channel);
+      set('gChannelBtn', g.channel_link, '频道');
+      set('gBot', g.search_bot_link, g.search_bot);
+      set('gBotBtn', g.search_bot_link, '搜片 Bot');
+      set('gSite', g.site, g.site);
+      set('gSiteBtn', g.site, '网站');
+    }
+  } catch (e) {
+    if (hint) hint.textContent = '';
+  }
+}
+initTelegramLogin();
+
+var currentAuthMode = 'login';
+
+function switchAuthTab(mode) {
+  currentAuthMode = mode;
+  var tabL = document.getElementById('tabLogin');
+  var tabR = document.getElementById('tabRegister');
+  var btn = document.getElementById('authSubmitBtn');
+  var invGroup = document.getElementById('inviteGroup');
+  var err = document.getElementById('err');
+  if (err) err.style.display = 'none';
+
+  if (mode === 'register') {
+    tabL.style.background = 'transparent';
+    tabL.style.color = 'var(--muted)';
+    tabR.style.background = 'var(--teal)';
+    tabR.style.color = '#000';
+    btn.textContent = '注册并登录';
+    invGroup.style.display = 'block';
+  } else {
+    tabL.style.background = 'var(--teal)';
+    tabL.style.color = '#000';
+    tabR.style.background = 'transparent';
+    tabR.style.color = 'var(--muted)';
+    btn.textContent = '登录';
+    invGroup.style.display = 'none';
+  }
+}
+
+async function handleAuthSubmit() {
+  if (currentAuthMode === 'register') {
+    await doRegister();
+  } else {
+    await doLogin();
+  }
+}
+
+async function doRegister() {
+  var err = document.getElementById('err');
+  var btn = document.getElementById('authSubmitBtn');
+  var u = document.getElementById('u').value.trim();
+  var p = document.getElementById('p').value.trim();
+  var inv = document.getElementById('inv') ? document.getElementById('inv').value.trim() : '';
+
+  if (!u || !p) {
+    err.style.display = 'block';
+    err.textContent = '请输入用户名和密码';
+    return;
+  }
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '注册中…';
+
+  try {
+    var csrfResp = await fetch('/api/csrf-token');
+    var csrfData = await csrfResp.json();
+    var r = await fetch('/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfData.csrf_token
+      },
+      body: JSON.stringify({
+        username: u,
+        password: p,
+        invite_code: inv,
+        next: (function () {
+          var m = location.search.match(/[?&]next=([^&]+)/);
+          return m ? decodeURIComponent(m[1]) : '';
+        })()
+      })
+    });
+    var d = await r.json();
+    if (r.ok && d.ok) {
+      location.href = d.redirect || loginNextUrl(d.role || 'user');
+    } else {
+      err.style.display = 'block';
+      err.textContent = d.error || '注册失败';
+      btn.disabled = false;
+      btn.textContent = '注册并登录';
+    }
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = '网络请求失败，请重试';
+    btn.disabled = false;
+    btn.textContent = '注册并登录';
+  }
+}
+
+async function doLogin() {
+  var err = document.getElementById('err');
+  var btn = document.querySelector('.btn-login');
+  err.style.display = 'none';
+
+  var originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '登录中…';
+  btn.style.opacity = '0.7';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    var csrfResp = await fetch('/api/csrf-token');
+    var csrfData = await csrfResp.json();
+    var csrfToken = csrfData.csrf_token;
+    var r = await fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({
+        username: document.getElementById('u').value,
+        password: document.getElementById('p').value,
+        csrf_token: csrfToken,
+        next: (function () {
+          var m = location.search.match(/[?&]next=([^&]+)/);
+          return m ? decodeURIComponent(m[1]) : '/';
+        })()
+      })
+    });
+    if (r.ok) {
+      var d = await r.json();
+      location.href = d.redirect || loginNextUrl(d.role);
+    } else {
+      var d = await r.json();
+      err.style.display = 'block';
+      err.textContent = d.error || '登录失败';
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+    }
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = '网络错误，请重试';
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+  }
+}
+
+async function doGithubLogin() {
+  var m = location.search.match(/[?&]next=([^&]+)/);
+  var next = m ? m[1] : encodeURIComponent('/');
+  window.location.href = '/login/github?next=' + next;
+}
+</script>
+</body>
+</html>

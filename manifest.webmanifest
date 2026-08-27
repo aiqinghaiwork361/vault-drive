@@ -1,0 +1,20 @@
+{
+  "name": "VaultDrive 资源浏览器",
+  "short_name": "VaultDrive",
+  "description": "私人胶片库 · 网盘资源检索",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

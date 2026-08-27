@@ -306,9 +306,9 @@ DB_CONFIG = {
     "database": os.environ.get("DB_NAME", "pan_resource"),
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
-    "connect_timeout": 10,
-    "read_timeout": 30,
-    "write_timeout": 30,
+    "connect_timeout": 5,
+    "read_timeout": 10,
+    "write_timeout": 10,
 }
 
 # ==================== 限流 ====================
@@ -3529,30 +3529,10 @@ def api_users():
             i["updated_at"] = str(i["updated_at"]) if i["updated_at"] else ""
             i["role"] = _norm_role(i.get("role"))
 
-        # 用户看板全局统计指标
-        cur.execute("""
-            SELECT 
-                COUNT(*) as total_users,
-                SUM(CASE WHEN created_at >= CURDATE() THEN 1 ELSE 0 END) as today_new,
-                SUM(CASE WHEN last_login >= CURDATE() THEN 1 ELSE 0 END) as today_active,
-                SUM(CASE WHEN telegram_id IS NOT NULL AND telegram_id != '' THEN 1 ELSE 0 END) as tg_bound,
-                SUM(CASE WHEN github_id IS NOT NULL AND github_id != '' THEN 1 ELSE 0 END) as gh_bound
-            FROM users
-        """)
-        user_stats_raw = cur.fetchone() or {}
-        user_stats = {
-            "total_users": int(user_stats_raw.get("total_users") or 0),
-            "today_new": int(user_stats_raw.get("today_new") or 0),
-            "today_active": int(user_stats_raw.get("today_active") or 0),
-            "tg_bound": int(user_stats_raw.get("tg_bound") or 0),
-            "gh_bound": int(user_stats_raw.get("gh_bound") or 0),
-        }
-
         return jsonify({
             "items": items,
             "total": total,
             "page": page,
-            "stats": user_stats,
             "me": {
                 "user_id": session.get("user_id"),
                 "is_superadmin": me_super,
@@ -3613,12 +3593,6 @@ def api_user_update(uid):
             sets.append("role=%s"); vals.append(new_role)
         if "status" in data:
             sets.append("status=%s"); vals.append(data["status"])
-        if "points" in data and data["points"] is not None:
-            try:
-                pts = int(data["points"])
-                sets.append("points=%s"); vals.append(pts)
-            except Exception:
-                pass
         if "telegram_id" in data:
             if not me_super:
                 return jsonify({"error": "只有超管能改 Telegram ID"}), 403
@@ -5943,127 +5917,46 @@ def api_admin_resource_update(rid):
 @app.route("/api/admin/duplicates")
 @admin_required
 def api_admin_duplicates():
-    """资源去重：按 URL 或标题分组统计重复（毫秒级高并发子查询优化版）"""
+    """资源去重：按 URL 或标题分组统计重复"""
     by = request.args.get("by", "url").strip()
     if by not in ("url", "title", "keyword"):
         by = "url"
     limit = min(int(request.args.get("limit", 50)), 200)
-    scan_scope = min(int(request.args.get("scope", 100000)), 300000)
     db = get_db()
     try:
-        cur = db.cursor(pymysql.cursors.DictCursor)
+        cur = db.cursor()
+        # 按规范化字段分组统计
         if by == "url":
             cur.execute(
-                f"""
-                SELECT url as key_val, COUNT(*) as cnt, GROUP_CONCAT(id ORDER BY id DESC) as ids,
-                       GROUP_CONCAT(title SEPARATOR ' | ') as titles,
-                       GROUP_CONCAT(source SEPARATOR ',') as sources
-                FROM (
-                    SELECT id, url, title, source FROM resources WHERE url IS NOT NULL AND url != '' ORDER BY id DESC LIMIT %s
-                ) sub
-                GROUP BY url HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s
-                """,
-                (scan_scope, limit)
+                "SELECT url as key, COUNT(*) as cnt, GROUP_CONCAT(id) as ids, "
+                "GROUP_CONCAT(title SEPARATOR ' | ') as titles, "
+                "GROUP_CONCAT(source SEPARATOR ',') as sources "
+                "FROM resources WHERE url IS NOT NULL AND url != '' "
+                "GROUP BY url HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s",
+                (limit,)
             )
         elif by == "title":
             cur.execute(
-                f"""
-                SELECT title as key_val, COUNT(*) as cnt, GROUP_CONCAT(id ORDER BY id DESC) as ids,
-                       GROUP_CONCAT(url SEPARATOR ' | ') as urls,
-                       GROUP_CONCAT(source SEPARATOR ',') as sources
-                FROM (
-                    SELECT id, title, url, source FROM resources WHERE title IS NOT NULL AND title != '' ORDER BY id DESC LIMIT %s
-                ) sub
-                GROUP BY title HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s
-                """,
-                (scan_scope, limit)
+                "SELECT title as key, COUNT(*) as cnt, GROUP_CONCAT(id) as ids, "
+                "GROUP_CONCAT(url SEPARATOR ' | ') as urls, "
+                "GROUP_CONCAT(source SEPARATOR ',') as sources "
+                "FROM resources WHERE title IS NOT NULL AND title != '' "
+                "GROUP BY title HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s",
+                (limit,)
             )
         else:
             cur.execute(
-                f"""
-                SELECT keyword as key_val, COUNT(*) as cnt, GROUP_CONCAT(id ORDER BY id DESC) as ids,
-                       GROUP_CONCAT(title SEPARATOR ' | ') as titles,
-                       GROUP_CONCAT(source SEPARATOR ',') as sources
-                FROM (
-                    SELECT id, keyword, title, source FROM resources WHERE keyword IS NOT NULL AND keyword != '' ORDER BY id DESC LIMIT %s
-                ) sub
-                GROUP BY keyword HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s
-                """,
-                (scan_scope, limit)
+                "SELECT keyword as key, COUNT(*) as cnt, GROUP_CONCAT(id) as ids, "
+                "GROUP_CONCAT(title SEPARATOR ' | ') as titles, "
+                "GROUP_CONCAT(source SEPARATOR ',') as sources "
+                "FROM resources WHERE keyword IS NOT NULL AND keyword != '' "
+                "GROUP BY keyword HAVING cnt > 1 ORDER BY cnt DESC LIMIT %s",
+                (limit,)
             )
-        items = cur.fetchall() or []
+        items = cur.fetchall()
         return jsonify({"items": items, "by": by, "total": len(items)})
     finally:
         db.close()
-
-
-@app.route("/api/admin/duplicates/clean", methods=["POST"])
-@admin_required
-def api_admin_duplicates_clean():
-    """执行真实资源库物理去重：彻底删除多余记录，极速安全版"""
-    data = request.get_json() or {}
-    by = data.get("by", "url")
-    keep = data.get("keep", "newest")
-    group_key = data.get("key")
-
-    import pymysql
-    conn = pymysql.connect(
-        host=DB_CONFIG["host"],
-        port=DB_CONFIG["port"],
-        user=DB_CONFIG["user"],
-        password=DB_CONFIG["password"],
-        database=DB_CONFIG["database"],
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor,
-        read_timeout=60,
-        write_timeout=60,
-    )
-    try:
-        cur = conn.cursor()
-        deleted_count = 0
-        
-        if group_key:
-            field = "url" if by == "url" else ("title" if by == "title" else "keyword")
-            cur.execute(f"SELECT id FROM resources WHERE {field} = %s ORDER BY id {'DESC' if keep == 'newest' else 'ASC'}", (group_key,))
-            rows = cur.fetchall()
-            if len(rows) > 1:
-                del_ids = [r["id"] for r in rows[1:]]
-                for i in range(0, len(del_ids), 200):
-                    batch = del_ids[i:i+200]
-                    fmt = ','.join(['%s'] * len(batch))
-                    cur.execute(f"DELETE FROM resources WHERE id IN ({fmt})", tuple(batch))
-                    deleted_count += cur.rowcount
-        else:
-            order_clause = "ORDER BY id DESC" if keep == "newest" else "ORDER BY id ASC"
-            partition_field = "url" if by == "url" else ("title" if by == "title" else "keyword")
-            
-            cur.execute(f"""
-                SELECT r.id 
-                FROM (
-                    SELECT id, {partition_field},
-                           ROW_NUMBER() OVER(PARTITION BY {partition_field} {order_clause}) as rn
-                    FROM resources
-                    WHERE {partition_field} IS NOT NULL AND {partition_field} != ''
-                ) r
-                WHERE r.rn > 1
-            """)
-            rows = cur.fetchall() or []
-            del_ids = [row["id"] for row in rows]
-            
-            if del_ids:
-                for i in range(0, len(del_ids), 200):
-                    batch = del_ids[i:i+200]
-                    fmt = ','.join(['%s'] * len(batch))
-                    cur.execute(f"DELETE FROM resources WHERE id IN ({fmt})", tuple(batch))
-                    deleted_count += cur.rowcount
-
-        conn.commit()
-        _invalidate_resource_cache()
-        return jsonify({"ok": True, "deleted_count": deleted_count})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-    finally:
-        conn.close()
 
 
 # ── 自动导入队列 ──
@@ -6782,62 +6675,6 @@ def api_admin_deadlinks_scan():
             "alive_count": alive_count,
             "unknown_count": unknown_count,
             "scanned": len(items),
-        })
-    finally:
-        db.close()
-
-
-@app.route("/api/admin/deadlinks/list")
-@admin_required
-def api_admin_deadlinks_list():
-    """获取所有被标记为失效(dead)或可疑(suspect)的死链明细列表"""
-    page = max(1, request.args.get("page", 1, type=int))
-    per_page = min(max(1, request.args.get("per_page", 20, type=int)), 100)
-    source = (request.args.get("source") or "").strip()
-    status_filter = (request.args.get("status") or "dead").strip()
-    offset = (page - 1) * per_page
-
-    db = get_db()
-    try:
-        cur = db.cursor(pymysql.cursors.DictCursor)
-        conds = []
-        params = []
-        
-        if status_filter == "suspect":
-            conds.append("link_status = 'suspect'")
-        elif status_filter == "all_dead":
-            conds.append("link_status IN ('dead', 'suspect')")
-        else:
-            conds.append("link_status = 'dead'")
-
-        if source:
-            conds.append("source = %s")
-            params.append(source)
-
-        where_sql = "WHERE " + " AND ".join(conds) if conds else ""
-        cur.execute(f"SELECT COUNT(*) as total FROM resources {where_sql}", params)
-        total = cur.fetchone()["total"]
-
-        cur.execute(
-            f"""
-            SELECT id, title, source, url, quality, type, link_status, last_checked, created_at
-            FROM resources {where_sql}
-            ORDER BY last_checked DESC, id DESC
-            LIMIT %s OFFSET %s
-            """,
-            params + [per_page, offset],
-        )
-        items = cur.fetchall() or []
-        for i in items:
-            i["last_checked"] = str(i["last_checked"]) if i.get("last_checked") else ""
-            i["created_at"] = str(i["created_at"]) if i.get("created_at") else ""
-
-        return jsonify({
-            "items": items,
-            "total": total,
-            "page": page,
-            "per_page": per_page,
-            "total_pages": (total + per_page - 1) // per_page,
         })
     finally:
         db.close()

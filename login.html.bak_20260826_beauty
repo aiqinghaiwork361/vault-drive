@@ -3,516 +3,323 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>登录 · VaultDrive 私享影音资源库</title>
+<title>登录 · VaultDrive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Sora:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
 :root {
-  --bg: #050508;
-  --card-bg: rgba(15, 15, 20, 0.82);
-  --card-border: rgba(255, 255, 255, 0.09);
+  --bg: #000000;
+  --ink: #f5f5f5;
+  --muted: #a3a3a3;
+  --faint: #737373;
+  --card: rgba(18, 18, 18, 0.92);
+  --border: rgba(255, 255, 255, 0.12);
   --teal: #2dd4bf;
-  --teal-hover: #14b8a6;
-  --teal-glow: rgba(45, 212, 191, 0.28);
-  --ink-primary: #f8fafc;
-  --ink-secondary: #94a3b8;
-  --ink-muted: #64748b;
-  --input-bg: rgba(8, 8, 12, 0.7);
-  --input-border: rgba(255, 255, 255, 0.1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --font-main: 'Plus Jakarta Sans', 'Noto Sans SC', system-ui, sans-serif;
+  --teal-dim: #14b8a6;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: 'Fraunces', 'Noto Sans SC', Georgia, serif;
+  --font-body: 'Sora', 'Noto Sans SC', sans-serif;
 }
-
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; width: 100%; }
-
+html, body { height: 100%; }
 body {
-  font-family: var(--font-main);
-  background-color: var(--bg);
-  color: var(--ink-primary);
+  font-family: var(--font-body);
+  color: var(--ink);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 2rem 1rem;
+  overflow: auto;
+  padding: 2.5rem 0 3.5rem;
   -webkit-font-smoothing: antialiased;
+  background: #000000;
 }
-
-/* 沉浸式影音流光背景 & 动态光束 */
-.cinema-backdrop {
+.stage {
   position: fixed;
-  inset: -10%;
+  inset: -6%;
   z-index: 0;
   background:
-    radial-gradient(ellipse 65% 55% at 15% 20%, rgba(45, 212, 191, 0.14), transparent 60%),
-    radial-gradient(ellipse 55% 50% at 85% 80%, rgba(99, 102, 241, 0.1), transparent 60%),
-    radial-gradient(ellipse 45% 45% at 50% 50%, rgba(20, 184, 166, 0.06), transparent 65%),
-    linear-gradient(160deg, #040406 0%, #090a0f 45%, #030305 100%);
-  background-size: 140% 140%;
-  animation: ambientFloat 28s ease-in-out infinite alternate;
-  pointer-events: none;
+    radial-gradient(ellipse 70% 55% at 18% 28%, rgba(45, 212, 191, 0.10), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 82% 72%, rgba(255, 255, 255, 0.03), transparent 55%),
+    linear-gradient(160deg, #000000 0%, #050505 48%, #000000 100%);
+  background-size: 120% 120%;
+  animation: drift 28s ease-in-out infinite alternate;
 }
-
-/* 微晶丝网暗纹 Overlay */
-.cinema-backdrop::before {
+.stage::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.15;
+  opacity: 0.16;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse 70% 65% at 50% 50%, #000 20%, transparent 85%);
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 72px 96px;
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 45%, #000 15%, transparent 75%);
+  pointer-events: none;
 }
-
-@keyframes ambientFloat {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-1.5%, 1.2%, 0) scale(1.03); }
-  100% { transform: translate3d(1.5%, -1%, 0) scale(1.01); }
+@keyframes drift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to { transform: translate3d(-2%, 1.2%, 0) scale(1.05); }
 }
-
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.78) 70%);
+  pointer-events: none;
+}
 .login-card {
   position: relative;
   z-index: 10;
-  width: min(450px, 100%);
-  padding: 2.25rem 2rem 2rem;
-  background: var(--card-bg);
-  backdrop-filter: blur(28px) saturate(1.25);
-  -webkit-backdrop-filter: blur(28px) saturate(1.25);
-  border: 1px solid var(--card-border);
-  border-radius: 24px;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 24px 60px rgba(0, 0, 0, 0.8),
-    0 0 45px rgba(45, 212, 191, 0.1);
-  animation: cardRise 0.65s var(--ease-out) both;
+  width: min(440px, calc(100% - 2rem));
+  padding: 2.2rem 1.85rem 1.85rem;
+  background: var(--card);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 24px 48px rgba(0,0,0,0.65);
+  animation: rise 0.75s var(--ease) both;
 }
-
-@keyframes cardRise {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* 顶部 Logo 与 标题 */
-.logo-area {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.brand-icon {
-  width: 50px;
-  height: 50px;
-  margin: 0 auto 12px;
-  background: linear-gradient(135deg, rgba(45, 212, 191, 0.22), rgba(20, 184, 166, 0.06));
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--teal);
-  box-shadow: 0 0 24px rgba(45, 212, 191, 0.2);
-  transition: transform 0.3s var(--ease-out);
-}
-
-.brand-icon:hover {
-  transform: rotate(5deg) scale(1.05);
-}
-
-.brand-icon svg {
-  width: 26px;
-  height: 26px;
-}
-
-.logo-area h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
-}
-
-.logo-area p {
-  font-size: 0.85rem;
-  color: var(--ink-secondary);
-  font-weight: 400;
-}
-
-/* 国内 IP 专属特征徽章栏 */
-.cn-badge-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 1.25rem;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  font-size: 0.75rem;
-  color: var(--ink-secondary);
-}
-
-.cn-badge-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 500;
-}
-
-.cn-badge-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--ink-muted);
-}
-
-/* TG/国外引流盒子 */
-.growth-box {
-  background: rgba(45, 212, 191, 0.05);
-  border: 1px solid rgba(45, 212, 191, 0.18);
-  border-radius: 14px;
-  padding: 12px 14px;
-  margin-bottom: 1.25rem;
-  font-size: 0.8rem;
-  color: var(--ink-secondary);
-  line-height: 1.5;
-}
-
-.growth-box strong {
-  display: block;
-  color: var(--teal);
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.growth-box a {
-  color: var(--ink-primary);
-  text-decoration: none;
-  border-bottom: 1px dotted var(--teal);
-}
-
-.growth-box a:hover { color: var(--teal); }
-
-.growth-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.growth-btn {
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--ink-primary);
-  font-size: 0.75rem;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.growth-btn.primary {
-  background: rgba(45, 212, 191, 0.15);
-  color: var(--teal);
-  border: 1px solid rgba(45, 212, 191, 0.25);
-}
-
-.growth-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-}
-
-.growth-note {
-  font-size: 0.72rem;
-  color: var(--ink-muted);
-  margin-top: 6px;
-}
-
-/* 消息提示框 */
-.error-msg, .success-msg {
-  display: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  margin-bottom: 1.25rem;
-  animation: fadeIn 0.25s ease;
-}
-
-.error-msg {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-
-.success-msg {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #86efac;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* 分割线 */
+.logo-area { text-align: center; margin-bottom: 1.75rem; }
+.kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.logo-area h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 8vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  animation: breath 6s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { letter-spacing: -0.04em; }
+  50% { letter-spacing: -0.028em; }
+}
+.logo-area p {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.error-msg {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: none;
+}
+.success-msg {
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  color: #2dd4bf;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+.input-group {
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+.input-group input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #121212;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.input-group input::placeholder { color: var(--faint); }
+.input-group input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18);
+}
+.input-group i { display: none; }
+.btn-wrap { margin-top: 0.85rem; }
+.btn-login, .btn-github, .btn-tg {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.25s var(--ease), background 0.2s ease, border-color 0.2s ease;
+}
+.btn-login {
+  background: var(--teal);
+  color: #000;
+}
+.btn-login:hover { background: var(--teal-dim); transform: translateY(-1px); }
+.btn-login:disabled { opacity: 0.7; cursor: wait; transform: none; }
+.btn-tg {
+  background: #2AABEE;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+.btn-tg:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.btn-tg:disabled { opacity: 0.75; cursor: wait; transform: none; }
+.btn-github {
+  background: #121212;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  margin-bottom: 0.35rem;
+}
+.btn-github:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+  transform: translateY(-1px);
+}
+.tg-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0.35rem 0 0.5rem;
+  min-height: 0;
+}
+.tg-hint {
+  font-size: 0.75rem;
+  color: var(--faint);
+  text-align: center;
+  line-height: 1.45;
+}
+.tg-hint a { color: var(--teal); }
 .divider {
   display: flex;
   align-items: center;
-  margin: 1.25rem 0;
-  color: var(--ink-muted);
+  gap: 12px;
+  margin: 0.85rem 0;
+  color: var(--faint);
   font-size: 0.75rem;
-  font-weight: 500;
 }
-
 .divider::before, .divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
 }
-
-.divider span { padding: 0 10px; }
-
-/* 社交登录按钮 */
-.btn-tg, .btn-github {
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.btn-tg { background: #2AABEE; color: #fff; }
-.btn-tg:hover { background: #229ed9; box-shadow: 0 4px 14px rgba(42, 171, 238, 0.35); }
-
-.btn-github { background: #24292e; color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); }
-.btn-github:hover { background: #2f363d; border-color: rgba(255, 255, 255, 0.3); }
-
-.tg-hint { font-size: 0.78rem; color: var(--ink-secondary); text-align: center; margin-top: 8px; }
-.tg-hint a { color: var(--teal); text-decoration: none; }
-
-/* Segmented Control 切换组件 */
-.tab-container {
-  display: flex;
-  position: relative;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 1.25rem;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 8px 4px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--ink-secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s var(--ease-out);
-  z-index: 1;
-  text-align: center;
-}
-
-.tab-btn.active {
-  color: #050507;
-  background: var(--teal);
-  box-shadow: 0 2px 10px rgba(45, 212, 191, 0.3);
-}
-
-.tab-btn:hover:not(.active) { color: var(--ink-primary); }
-
-/* 表单与输入框 */
-.input-group {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.input-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--ink-muted);
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-  transition: color 0.2s ease;
-}
-
-.input-group input {
-  width: 100%;
-  height: 46px;
-  padding: 0 14px 0 42px;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 12px;
-  color: var(--ink-primary);
-  font-family: inherit;
-  font-size: 0.88rem;
-  outline: none;
-  transition: all 0.2s var(--ease-out);
-}
-
-.input-group input::placeholder { color: var(--ink-muted); }
-
-.input-group input:focus {
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
-  background: rgba(12, 12, 18, 0.88);
-}
-
-.input-group input:focus ~ .input-icon { color: var(--teal); }
-
-/* 验证码按钮 */
-.code-input-wrap { display: flex; gap: 8px; }
-.code-input-wrap input { flex: 1; }
-
-.btn-code {
-  flex-shrink: 0;
-  padding: 0 16px;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid rgba(45, 212, 191, 0.3);
-  background: rgba(45, 212, 191, 0.08);
-  color: var(--teal);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.btn-code:hover:not(:disabled) {
-  background: rgba(45, 212, 191, 0.18);
-  border-color: var(--teal);
-  transform: translateY(-1px);
-}
-
-.btn-code:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-/* 提交主按钮（包含 Shimmer 流光效果） */
-.btn-submit {
-  position: relative;
-  width: 100%;
-  height: 48px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-hover) 100%);
-  color: #040406;
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 700;
-  cursor: pointer;
-  overflow: hidden;
-  transition: all 0.25s var(--ease-out);
-  box-shadow: 0 4px 18px rgba(45, 212, 191, 0.28);
-  margin-top: 0.5rem;
-}
-
-.btn-submit::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(60deg, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%);
-  transform: rotate(30deg) translateY(-100%);
-  transition: transform 0.6s ease;
-}
-
-.btn-submit:hover::after {
-  transform: rotate(30deg) translateY(100%);
-}
-
-.btn-submit:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(45, 212, 191, 0.4);
-  filter: brightness(1.05);
-}
-
-.btn-submit:active { transform: translateY(0); }
-
-/* 返回首页链接 */
 .back-link {
   display: block;
   text-align: center;
-  margin-top: 1.25rem;
-  color: var(--ink-muted);
-  font-size: 0.8rem;
+  margin-top: 1.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
-
 .back-link:hover { color: var(--teal); }
-
-.login-footer {
-  position: relative;
-  z-index: 10;
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-  letter-spacing: 0.05em;
+.growth-box {
+  margin: 0 0 1.2rem;
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: 14px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+  background: linear-gradient(160deg, rgba(45, 212, 191, 0.10), rgba(0, 0, 0, 0.28));
 }
-
+.growth-box strong { color: var(--ink); font-weight: 650; display: block; margin-bottom: 8px; font-size: 0.9rem; }
+.growth-box a { color: var(--teal); text-decoration: none; }
+.growth-box a:hover { text-decoration: underline; }
+.growth-box .dev {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.68rem;
+  color: var(--faint);
+  border: 1px solid var(--border);
+  padding: 0 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+.growth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.growth-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+}
+.growth-btn:hover { color: var(--teal) !important; text-decoration: none !important; }
+.growth-btn.primary {
+  background: var(--teal);
+  color: #04110e !important;
+  border-color: transparent;
+}
+.growth-note { margin: 8px 0 0; font-size: 0.72rem; color: var(--faint); }
+.login-footer {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 0; right: 0;
+  text-align: center;
+  z-index: 10;
+  font-size: 0.72rem;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
 @media (max-width: 480px) {
-  .login-card { padding: 1.75rem 1.25rem 1.5rem; }
+  .login-card { padding: 2rem 1.35rem 1.6rem; }
 }
 </style>
 <script src="/site-settings.js"></script>
 </head>
 <body>
-<div class="cinema-backdrop" aria-hidden="true"></div>
+<div class="stage" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
 
 <div class="login-card">
-  <!-- 品牌 Icon 与 标题 -->
   <div class="logo-area">
-    <div class="brand-icon">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-      </svg>
-    </div>
+    <div class="kicker">黑矿场内测</div>
     <h1>VaultDrive</h1>
-    <p>私享影音资源库 · 全网云盘搜片</p>
+    <p>先进群，收藏才开放 · 搜索可直接用</p>
   </div>
 
-  <!-- 特色提示 (国内 IP 专属体验) -->
-  <div class="cn-badge-bar" id="cnFeatures">
-    <span class="cn-badge-item">⚡ 4K原画</span>
-    <span class="cn-badge-dot"></span>
-    <span class="cn-badge-item">🐬 极速云盘</span>
-    <span class="cn-badge-dot"></span>
-    <span class="cn-badge-item">💽 盘搜直达</span>
-  </div>
-
-  <!-- 错误与成功消息 -->
   <div class="error-msg" id="err"></div>
   <div class="success-msg" id="successMsg"></div>
 
-  <!-- 社群引流框 (TG/国外IP专属或全端生效) -->
-  <div class="growth-box" id="growthBox" style="display:none;">
+  <div class="growth-box" id="growthBox">
     <strong>黑矿场资源内测：先进群</strong>
-    私聊 <a href="https://t.me/tg38haokuangchang_bot" target="_blank" rel="noopener" id="gBot">@tg38haokuangchang_bot</a> 发片名搜片<span style="color:var(--teal);margin-left:4px;">[测试中]</span><br>
+    私聊 <a href="https://t.me/tg38haokuangchang_bot" target="_blank" rel="noopener" id="gBot">@tg38haokuangchang_bot</a> 发片名搜片<span class="dev" style="color:var(--teal);border-color:var(--teal)">测试中</span>。<br>
     网站 <a href="https://vault.aaaaaaaa.host/" target="_blank" rel="noopener" id="gSite">https://vault.aaaaaaaa.host/</a><br>
     频道 <a href="https://t.me/heikuangchang" target="_blank" rel="noopener" id="gChannel">@heikuangchang</a>
     <div class="growth-links">
@@ -524,120 +331,81 @@ body {
     <p class="growth-note">未进群不能使用收藏 · 搜索可直接用</p>
   </div>
 
-  <!-- Telegram 登录块 -->
   <div id="tgLoginSection" style="display:none;">
-    <div style="margin-bottom:10px;">
-      <button type="button" class="btn-tg" id="tgBotLoginBtn" onclick="startTelegramBotLogin()">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S16.63 0 12 0zm5.56 8.16l-2.03 9.56c-.15.68-.55.84-1.12.52l-3.1-2.28-1.5 1.44c-.16.16-.3.3-.61.3l.22-3.17 5.77-5.21c.25-.22-.05-.34-.39-.12l-7.14 4.49-3.07-.96c-.67-.21-.68-.67.14-.99l12.01-4.63c.56-.21 1.05.13.83.96z"/></svg>
-        使用 Telegram 登录
-      </button>
+    <div class="btn-wrap" style="margin-top:0">
+      <button type="button" class="btn-tg" id="tgBotLoginBtn" onclick="startTelegramBotLogin()">使用 Telegram 登录 @vaultdrive_bot</button>
     </div>
-    <div id="tgLoginWrap">
+    <div class="tg-wrap" id="tgLoginWrap">
       <div class="tg-hint" id="tgHint"></div>
     </div>
   </div>
 
-  <!-- GitHub 登录块 -->
   <div id="ghLoginSection" style="display:none;">
-    <div class="divider" id="ghDivider"><span>或</span></div>
-    <div style="margin-bottom:10px;">
-      <button type="button" class="btn-github" onclick="doGithubLogin()">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        使用 GitHub 登录
-      </button>
+    <div class="divider" id="ghDivider">或</div>
+    <div class="btn-wrap" style="margin-top:0">
+      <button type="button" class="btn-github" onclick="doGithubLogin()">使用 GitHub 登录</button>
     </div>
   </div>
 
-  <div class="divider" id="authDivider" style="display:none;"><span>第三方通行</span></div>
+  <div class="divider" id="authDivider" style="display:none;">或</div>
 
-  <!-- 分段选项卡 Segmented Tabs -->
-  <div class="tab-container">
-    <button type="button" id="tabLogin" class="tab-btn active" onclick="switchAuthTab('login')">账号登录</button>
-    <button type="button" id="tabRegister" class="tab-btn" onclick="switchAuthTab('register')">邮箱注册</button>
-    <button type="button" id="tabReset" class="tab-btn" onclick="switchAuthTab('reset')">找回密码</button>
+  <div style="display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.05);padding:4px;border-radius:10px;">
+    <button type="button" id="tabLogin" onclick="switchAuthTab('login')" style="flex:1;padding:6px;border:none;border-radius:8px;background:var(--teal);color:#000;font-weight:600;font-size:0.82rem;cursor:pointer;">账号登录</button>
+    <button type="button" id="tabRegister" onclick="switchAuthTab('register')" style="flex:1;padding:6px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:0.82rem;cursor:pointer;">邮箱注册</button>
+    <button type="button" id="tabReset" onclick="switchAuthTab('reset')" style="flex:1;padding:6px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:0.82rem;cursor:pointer;">找回密码</button>
   </div>
 
-  <!-- 1. 账号登录区域 -->
+  <!-- 登录输入区 -->
   <div id="loginFields">
     <div class="input-group">
       <input id="u" placeholder="用户名 或 注册邮箱" autofocus onkeydown="if(event.key==='Enter')document.getElementById('p').focus()">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-      </svg>
     </div>
     <div class="input-group">
-      <input id="p" type="password" placeholder="登录密码 (至少6位)" onkeydown="if(event.key==='Enter')handleAuthSubmit()">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-      </svg>
+      <input id="p" type="password" placeholder="密码 (至少6位)" onkeydown="if(event.key==='Enter')handleAuthSubmit()">
     </div>
   </div>
 
-  <!-- 2. 邮箱注册区域 -->
+    <!-- 邮箱注册输入区 -->
   <div id="registerFields" style="display:none;">
     <div class="input-group">
-      <input id="regEmail" type="email" placeholder="电子邮箱地址" onkeydown="if(event.key==='Enter')sendEmailCode('register')">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-      </svg>
+      <input id="regEmail" type="email" placeholder="输入电子邮箱" onkeydown="if(event.key==='Enter')sendEmailCode('register')">
     </div>
-    <div class="input-group code-input-wrap">
-      <div style="position:relative;flex:1;">
-        <input id="regCode" placeholder="6位数字验证码" maxlength="6">
-        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-        </svg>
-      </div>
-      <button type="button" id="btnSendCode" class="btn-code" onclick="sendEmailCode('register')">获取验证码</button>
+    <div class="input-group" style="display:flex;gap:8px;">
+      <input id="regCode" placeholder="6位数字验证码" style="flex:1;" maxlength="6">
+      <button type="button" id="btnSendCode" onclick="sendEmailCode('register')" style="flex-shrink:0;padding:0 14px;height:48px;border-radius:999px;border:1px solid var(--border);background:#18181b;color:var(--teal);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;">获取验证码</button>
     </div>
     <div class="input-group">
       <input id="regUsername" placeholder="设置用户名 (3-30字符)" onkeydown="if(event.key==='Enter')document.getElementById('regPwd').focus()">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
     </div>
     <div class="input-group">
       <input id="regPwd" type="password" placeholder="设置登录密码 (至少6位)" onkeydown="if(event.key==='Enter')handleAuthSubmit()">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-      </svg>
     </div>
   </div>
 
-  <!-- 3. 找回密码区域 -->
+  <!-- 找回密码输入区 -->
   <div id="resetFields" style="display:none;">
     <div class="input-group">
       <input id="resetEmail" type="email" placeholder="输入绑定的注册邮箱" onkeydown="if(event.key==='Enter')sendEmailCode('reset')">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-      </svg>
     </div>
-    <div class="input-group code-input-wrap">
-      <div style="position:relative;flex:1;">
-        <input id="resetCode" placeholder="6位数字验证码" maxlength="6">
-        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-        </svg>
-      </div>
-      <button type="button" id="btnResetSendCode" class="btn-code" onclick="sendEmailCode('reset')">获取验证码</button>
+    <div class="input-group" style="display:flex;gap:8px;">
+      <input id="resetCode" placeholder="6位数字验证码" style="flex:1;" maxlength="6">
+      <button type="button" id="btnResetSendCode" onclick="sendEmailCode('reset')" style="flex-shrink:0;padding:0 14px;height:48px;border-radius:999px;border:1px solid var(--border);background:#18181b;color:var(--teal);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;">获取验证码</button>
     </div>
     <div class="input-group">
       <input id="resetNewPwd" type="password" placeholder="设置新登录密码 (至少6位)" onkeydown="if(event.key==='Enter')handleAuthSubmit()">
-      <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-      </svg>
     </div>
   </div>
 
   <input type="hidden" id="csrf_token" name="csrf_token" value="">
 
-  <!-- 主提交按钮 -->
-  <button class="btn-submit" id="authSubmitBtn" onclick="handleAuthSubmit()">登录</button>
+  <div class="btn-wrap">
+    <button class="btn-login" id="authSubmitBtn" onclick="handleAuthSubmit()">登录</button>
+  </div>
 
-  <a href="/" class="back-link">← 返回首页搜索</a>
+  <a href="/" class="back-link">← 返回首页</a>
 </div>
 
-<div class="login-footer">VaultDrive · 私享影音资源库</div>
+<div class="login-footer">VaultDrive · Pure Black</div>
 
 <script>
 (function showUrlError() {
@@ -654,7 +422,7 @@ function loginNextUrl(role) {
   if (m) {
     try {
       var u = decodeURIComponent(m[1]);
-      if (u.startsWith('/') && !u.startsWith('//') && u.indexOf('\\\\') < 0 && !u.startsWith('/login')) {
+      if (u.startsWith('/') && !u.startsWith('//') && u.indexOf('\\') < 0 && !u.startsWith('/login')) {
         next = u.slice(0, 500);
       }
     } catch (e) {}
@@ -790,7 +558,7 @@ async function initTelegramLogin() {
       if (growthBox) growthBox.style.display = 'block';
       var loginBot = cfg.login_bot || cfg.bot_username || 'vaultdrive_bot';
       var btn = document.getElementById('tgBotLoginBtn');
-      if (btn) btn.innerHTML = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S16.63 0 12 0zm5.56 8.16l-2.03 9.56c-.15.68-.55.84-1.12.52l-3.1-2.28-1.5 1.44c-.16.16-.3.3-.61.3l.22-3.17 5.77-5.21c.25-.22-.05-.34-.39-.12l-7.14 4.49-3.07-.96c-.67-.21-.68-.67.14-.99l12.01-4.63c.56-.21 1.05.13.83.96z"/></svg> 使用 Telegram 登录 @' + loginBot;
+      if (btn) btn.textContent = '使用 Telegram 登录 @' + loginBot;
       if (hint && cfg.required_chat_link) {
         hint.innerHTML = '登录走 <a href="https://t.me/' + loginBot + '" target="_blank" rel="noopener">@' + loginBot + '</a> · 仅 <a href="' + cfg.required_chat_link + '" target="_blank" rel="noopener">' + (cfg.required_chat || '指定群') + '</a> 成员可登录';
       }
@@ -852,30 +620,27 @@ function switchAuthTab(mode) {
   if (succ) succ.style.display = 'none';
 
   [tabL, tabR, tabRs].forEach(function(t) {
-    if (t) { t.classList.remove('active'); }
+    if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; }
   });
   if (loginFields) loginFields.style.display = 'none';
   if (registerFields) registerFields.style.display = 'none';
   if (resetFields) resetFields.style.display = 'none';
 
   if (mode === 'register') {
-    if (tabR) tabR.classList.add('active');
+    if (tabR) { tabR.style.background = 'var(--teal)'; tabR.style.color = '#000'; }
     btn.textContent = '立即注册并登录 (+100积分)';
     if (registerFields) registerFields.style.display = 'block';
-    var regEl = document.getElementById('regEmail');
-    if (regEl) regEl.focus();
+    document.getElementById('regEmail').focus();
   } else if (mode === 'reset') {
-    if (tabRs) tabRs.classList.add('active');
+    if (tabRs) { tabRs.style.background = 'var(--teal)'; tabRs.style.color = '#000'; }
     btn.textContent = '确认重置密码';
     if (resetFields) resetFields.style.display = 'block';
-    var resetEl = document.getElementById('resetEmail');
-    if (resetEl) resetEl.focus();
+    document.getElementById('resetEmail').focus();
   } else {
-    if (tabL) tabL.classList.add('active');
+    if (tabL) { tabL.style.background = 'var(--teal)'; tabL.style.color = '#000'; }
     btn.textContent = '登录';
     if (loginFields) loginFields.style.display = 'block';
-    var uEl = document.getElementById('u');
-    if (uEl) uEl.focus();
+    document.getElementById('u').focus();
   }
 }
 
@@ -1066,13 +831,13 @@ async function doEmailReset() {
 
 async function doLogin() {
   var err = document.getElementById('err');
-  var btn = document.getElementById('authSubmitBtn');
+  var btn = document.querySelector('.btn-login');
   err.style.display = 'none';
 
   var originalHTML = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '登录中…';
-  btn.style.opacity = '0.75';
+  btn.style.opacity = '0.7';
   btn.style.pointerEvents = 'none';
 
   try {

@@ -333,11 +333,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <select id="resSource" onchange="loadResources()"><option value="">全部来源</option></select>
           <select id="resType" onchange="loadResources()"><option value="">全部类型</option><option>电影</option><option>剧集</option><option>动漫</option><option>综艺</option><option>纪录片</option></select>
           <select id="resQuality" onchange="loadResources()"><option value="">全部画质</option><option>4K</option><option>1080P</option><option>720P</option></select>
-          <select id="resLinkStatus" onchange="loadResources()"><option value="">全部状态</option><option value="alive">✅ 正常存活</option><option value="dead">❌ 失效死链</option><option value="unchecked">⏳ 未检测</option></select>
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-p btn-s" onclick="batchCheckSelectedResources()" id="batchCheckBtn" disabled>⚡ 批量测活 (0)</button>
-          <button class="btn btn-p btn-s" style="background:#0ea5e9" onclick="checkCurrentPageResources()" id="pageCheckBtn">🔍 本页测活</button>
           <button class="btn btn-r btn-s" onclick="batchDeleteResources()" id="batchDelBtn" disabled>批量删除</button>
           <button class="btn btn-g btn-s" onclick="loadResources()">刷新</button>
         </div>
@@ -366,110 +363,48 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
     <!-- 死链清理 -->
     <div id="sec-deadlinks" style="display:none">
-      <div class="hdr"><h1>死链巡检与清理</h1></div>
+      <div class="hdr"><h1>死链清理</h1></div>
       <div class="card-grid" id="deadlinkKpi">
-        <div class="kpi-card"><div class="lbl">未检测资源</div><div class="val" id="dlUnchecked">-</div></div>
-        <div class="kpi-card"><div class="lbl">已确认死链</div><div class="val" id="dlDead" style="color:var(--red, #ef4444);">-</div></div>
-        <div class="kpi-card"><div class="lbl">正常存活</div><div class="val" id="dlAlive" style="color:var(--green, #10b981);">-</div></div>
+        <div class="kpi-card"><div class="lbl">未检测</div><div class="val" id="dlUnchecked">-</div></div>
+        <div class="kpi-card"><div class="lbl">已标记死链</div><div class="val" id="dlDead">-</div></div>
+        <div class="kpi-card"><div class="lbl">正常</div><div class="val" id="dlAlive">-</div></div>
       </div>
       <div class="chart-grid">
         <div class="chart-box"><h4>按来源分布</h4><div class="pie-list" id="deadlinkSourceList"><div class="empty">加载中…</div></div></div>
-        <div class="chart-box"><h4>🚀 后台全量并发巡检与一键清空</h4>
+        <div class="chart-box"><h4>扫描控制</h4>
           <div class="form-row" style="margin:0">
-            <div class="form-group"><label>来源过滤 (自动跳过磁力)</label><select id="dlSourceFilter" onchange="loadDeadlinkStats()"><option value="">全部网盘来源</option></select></div>
+            <div class="form-group"><label>每批数量</label><input id="dlBatchSize" type="number" value="50" min="10" max="200"></div>
+            <div class="form-group"><label>来源过滤</label><select id="dlSourceFilter"><option value="">全部</option></select></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button class="btn btn-p" id="bgStartBtn" onclick="startBgScan()">🚀 启动全量后台巡检</button>
-            <button class="btn btn-r" id="bgStopBtn" onclick="stopBgScan()" style="display:none">⏹️ 停止巡检</button>
-            <button class="btn btn-r" onclick="deleteDeadlinks()" id="dlDeleteBtn">🗑️ 物理删除已确认死链</button>
-            <button class="btn btn-g" onclick="loadDeadlinkStats()">🔄 刷新数据</button>
+            <button class="btn btn-p" onclick="scanDeadlinks()">开始扫描</button>
+            <button class="btn btn-r" onclick="deleteDeadlinks()" id="dlDeleteBtn">删除全部死链</button>
+            <button class="btn btn-g" onclick="loadDeadlinkStats()">刷新统计</button>
           </div>
-          <div id="bgScanProgressBox" style="margin-top:14px;display:none;background:rgba(0,0,0,0.3);padding:12px;border-radius:6px;border:1px solid rgba(255,255,255,0.1)">
-            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:6px">
-              <span id="bgScanStatusText">⏳ 巡检进行中...</span>
-              <span id="bgScanPct" style="font-weight:700;color:var(--green, #10b981)">0%</span>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border,rgba(255,255,255,.08))">
+            <h4 style="margin:0 0 10px;font-size:.9rem">自动清理（失效超过 N 天）</h4>
+            <div class="form-row" style="margin:0">
+              <div class="form-group"><label>天数</label><input id="acDays" type="number" value="7" min="1" max="365"></div>
             </div>
-            <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden">
-              <div id="bgScanBar" style="width:0%;height:100%;background:linear-gradient(90deg, #10b981, #00ff9c);transition:width 0.3s"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-g" onclick="previewAutoClean()">预览</button>
+              <button class="btn btn-r" onclick="runAutoClean()">立即清理</button>
             </div>
-            <div id="bgScanDetail" style="margin-top:8px;font-size:0.75rem;color:var(--text-secondary, #94a3b8);display:flex;gap:14px">
-              <span>已扫: <b id="bgScanned" style="color:var(--text, #fff)">0</b></span>
-              <span style="color:#10b981">存活: <b id="bgAlive">0</b></span>
-              <span style="color:#ef4444">死链: <b id="bgDead">0</b></span>
-              <span>耗时: <b id="bgElapsed">0s</b></span>
-            </div>
+            <div id="acResult" style="margin-top:10px;font-size:0.8rem;color:var(--text-secondary)"></div>
           </div>
+          <div id="dlScanResult" style="margin-top:14px;font-size:0.8rem;color:var(--text-secondary)"></div>
         </div>
       </div>
-      <div style="margin-top:20px;">
-        <h3 style="font-size:1rem;margin-bottom:10px;">📋 已标识失效死链清单</h3>
-        <div class="tbl-wrap">
-          <table><thead><tr><th>ID</th><th>资源标题</th><th>来源</th><th>URL</th><th>检测时间</th><th>操作</th></tr></thead><tbody id="dlResultTbl"><tr><td colspan="6" class="empty">加载中…</td></tr></tbody></table>
-        </div>
-        <div class="pagination" id="dlPager"></div>
+      <div class="tbl-wrap" style="display:none" id="dlResultWrap">
+        <table><thead><tr><th>ID</th><th>标题</th><th>来源</th><th>状态</th><th>信息</th></tr></thead><tbody id="dlResultTbl"></tbody></table>
       </div>
     </div>
 
     <!-- 用户管理 -->
     <div id="sec-users" style="display:none">
-      <div class="hdr">
-        <h1>用户管理</h1>
-        <button class="btn btn-p btn-s" onclick="showModal('addUserModal')">+ 添加用户</button>
-      </div>
-
-      <!-- 用户看板全局微统计 -->
-      <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1rem; display:grid; gap:12px;">
-        <div class="stat-card" style="padding:12px 16px; background:var(--surface-2); border-radius:8px; border:1px solid var(--hairline);">
-          <div class="label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">👥 总注册用户</div>
-          <div class="value" id="userStatTotal" style="font-size:1.25rem; font-weight:700; color:var(--text-primary);">-</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px; background:var(--surface-2); border-radius:8px; border:1px solid var(--hairline);">
-          <div class="label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">✨ 今日新注册</div>
-          <div class="value" id="userStatTodayNew" style="font-size:1.25rem; font-weight:700; color:var(--teal);">-</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px; background:var(--surface-2); border-radius:8px; border:1px solid var(--hairline);">
-          <div class="label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">🔥 今日活跃用户</div>
-          <div class="value" id="userStatActive" style="font-size:1.25rem; font-weight:700; color:#fb923c;">-</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px; background:var(--surface-2); border-radius:8px; border:1px solid var(--hairline);">
-          <div class="label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">✈️/🐙 平台绑定率</div>
-          <div class="value" id="userStatBound" style="font-size:1.25rem; font-weight:700; color:#a78bfa;">-</div>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <div class="search-box">
-            <input id="userSearchInput" placeholder="搜索用户名 / 邮箱 / TG ID" onkeydown="if(event.key==='Enter')loadUsers()">
-            <button class="btn btn-p btn-s" onclick="loadUsers()">搜索</button>
-          </div>
-          <select id="userRoleFilter" onchange="loadUsers()">
-            <option value="">全部角色</option>
-            <option value="user">普通用户</option>
-            <option value="admin">管理员</option>
-            <option value="superadmin">超级管理员</option>
-          </select>
-          <button class="btn btn-g btn-s" onclick="loadUsers()">刷新</button>
-        </div>
-      </div>
+      <div class="hdr"><h1>用户管理</h1><button class="btn btn-p btn-s" onclick="showModal('addUserModal')">+ 添加用户</button></div>
       <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>用户名 / 账号</th>
-              <th>绑定邮箱</th>
-              <th>第三方绑定</th>
-              <th>角色</th>
-              <th>积分</th>
-              <th>状态</th>
-              <th>最后登录</th>
-              <th>注册时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="userTbl"><tr><td colspan="10" class="empty">加载中…</td></tr></tbody>
-        </table>
+        <table><thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>最后登录</th><th>GitHub</th><th>操作</th></tr></thead><tbody id="userTbl"><tr><td colspan="7" class="empty">加载中…</td></tr></tbody></table>
       </div>
     </div>
 
@@ -494,24 +429,23 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
     <!-- 资源去重 -->
     <div id="sec-duplicates" style="display:none">
-      <div class="hdr"><h1>资源去重清理</h1></div>
+      <div class="hdr"><h1>资源去重</h1></div>
       <div class="toolbar">
-        <div class="toolbar-left" style="flex-wrap:wrap;gap:8px;">
+        <div class="toolbar-left">
           <select id="dupBy" onchange="loadDuplicates()">
             <option value="url">按 URL 重复</option>
-            <option value="title">按标题与来源重复</option>
+            <option value="title">按标题重复</option>
             <option value="keyword">按关键词重复</option>
           </select>
-          <button class="btn btn-g btn-s" onclick="loadDuplicates()">刷新列表</button>
-          <button class="btn btn-r btn-s" onclick="cleanAllDuplicatesAuto()">⚡ 一键清除全库重复资源 (只保留最新1条)</button>
-          <button class="btn btn-p btn-s" onclick="rebuildAggregate()">重建前端聚合视图</button>
-          <button class="btn btn-g btn-s" onclick="previewDataClean()">🧹 类型/画质清洗预览</button>
-          <button class="btn btn-p btn-s" onclick="runDataClean()">✨ 批量清洗类型/画质</button>
+          <button class="btn btn-g btn-s" onclick="loadDuplicates()">刷新</button>
+          <button class="btn btn-p btn-s" onclick="rebuildAggregate()">重建聚合表</button>
+          <button class="btn btn-g btn-s" onclick="runSubPush(true)">订阅推送预览</button>
+          <button class="btn btn-p btn-s" onclick="runSubPush(false)">执行订阅推送</button>
         </div>
       </div>
       <div id="dupExtraResult" style="font-size:.8rem;color:var(--text-secondary);margin:0 0 10px"></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>重复关键词 / URL / 标题</th><th>重复数</th><th>来源</th><th>涉及资源 ID (降序)</th><th>操作</th></tr></thead><tbody id="dupTbl"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody></table>
+        <table><thead><tr><th>重复值</th><th>重复数</th><th>来源</th><th>涉及 ID</th><th>操作</th></tr></thead><tbody id="dupTbl"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody></table>
       </div>
     </div>
 
@@ -540,24 +474,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         </div>
       </div>
       <div class="section-card">
-        <h3>第三方登录与认证开关</h3>
+        <h3>Telegram 登录认证</h3>
         <div id="tgLoginStatus" style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:14px">加载中…</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Telegram 登录总开关</label>
-            <select id="setEnableTgLogin">
-              <option value="1">开启 (仅境外IP可见入口)</option>
-              <option value="0">完全关闭</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>GitHub 登录总开关</label>
-            <select id="setEnableGhLogin">
-              <option value="1">开启</option>
-              <option value="0">完全关闭</option>
-            </select>
-          </div>
-        </div>
         <div class="form-row">
           <div class="form-group"><label>Bot API Token</label><input id="setTgBotToken" type="password" placeholder="留空则不修改；从 BotFather 复制" autocomplete="off"></div>
           <div class="form-group"><label>Bot 用户名</label><input id="setTgBotUsername" placeholder="例如 hermesagentalways_bot（不要加@）"></div>
@@ -628,19 +546,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <div class="form-group"><label>用户名</label><input id="editUserName" placeholder="用户名"></div>
   <div class="form-group"><label>角色</label><select id="editUserRole"><option value="user">普通用户</option><option value="admin">管理员</option></select></div>
   <div class="form-group"><label>状态</label><select id="editUserStatus"><option value="1">正常</option><option value="0">禁用</option></select></div>
-  <div class="form-group"><label>账户积分 (Points)</label><input id="editUserPoints" type="number" placeholder="修改当前积分"></div>
   <div class="form-group"><label>Telegram ID</label><input id="editUserTg" placeholder="数字 ID，可留空解绑"></div>
-  <div class="form-group">
-    <label>新密码</label>
-    <div style="display:flex;gap:8px;">
-      <input id="editUserPass" type="text" placeholder="留空则不修改密码" style="flex:1;">
-      <button type="button" class="btn btn-g btn-s" onclick="generateRandomPass('editUserPass')">⚡ 随机强密码</button>
-    </div>
-  </div>
+  <div class="form-group"><label>新密码</label><input id="editUserPass" type="password" placeholder="留空则不改密码"></div>
   <div class="modal-ft">
-    <button class="btn btn-r" onclick="deleteUserFromEdit()">删除用户</button>
+    <button class="btn btn-r" onclick="deleteUserFromEdit()">删除</button>
     <button class="btn btn-g" onclick="hideModal('editUserModal')">取消</button>
-    <button class="btn btn-p" onclick="saveUserEdit()">保存更改</button>
+    <button class="btn btn-p" onclick="saveUserEdit()">保存</button>
   </div>
 </div></div>
 
@@ -704,13 +615,8 @@ const fmtN = n => Number(n||0).toLocaleString();
 
 async function api(u,m='GET',d=null){
   const csrf=await(await fetch('/api/csrf-token')).json();
-  const token = csrf.csrf_token || '';
-  const o={method:m,headers:{'Content-Type':'application/json','X-CSRF-Token':token,'X-CSRFToken':token}};
-  if(d !== null && d !== undefined) {
-    o.body = JSON.stringify(d);
-  } else if(m === 'POST' || m === 'PUT' || m === 'DELETE') {
-    o.body = JSON.stringify({ csrf_token: token });
-  }
+  const o={method:m,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf.csrf_token||''}};
+  if(d)o.body=JSON.stringify(d);
   const r=await fetch(u,o);
   if(r.status===401){window.location.href='/';return null}
   const txt=await r.text();
@@ -849,15 +755,13 @@ async function loadResources(page=1){
   const type=document.getElementById('resType').value;
   const quality=document.getElementById('resQuality').value;
   const per_page=20;
-  const link_status=document.getElementById('resLinkStatus')?document.getElementById('resLinkStatus').value:'';
-  const url='/api/admin/resources?page='+page+'&per_page='+per_page+(q?'&q='+encodeURIComponent(q):'')+(source?'&source='+encodeURIComponent(source):'')+(type?'&type='+encodeURIComponent(type):'')+(quality?'&quality='+encodeURIComponent(quality):'')+(link_status?'&link_status='+encodeURIComponent(link_status):'');
+  const url='/api/admin/resources?page='+page+'&per_page='+per_page+(q?'&q='+encodeURIComponent(q):'')+(source?'&source='+encodeURIComponent(source):'')+(type?'&type='+encodeURIComponent(type):'')+(quality?'&quality='+encodeURIComponent(quality):'');
   const d=await api(url); if(!d)return;
   resTotal=d.total_pages||1;
   const items=d.items||[];
   document.getElementById('resTbl').innerHTML=items.length?items.map(r=>{
     const title=(r.title||r.note||'').substring(0,60);
-    const statusBadge = r.link_status==='dead' ? '<span class="badge" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">❌失效</span>' : r.link_status==='alive' ? '<span class="badge" style="background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">✅正常</span>' : '<span class="badge" style="background:#64748b;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⏳未测</span>';
-    return '<tr><td><input type="checkbox" class="res-check" data-id="'+r.id+'" data-status="'+(r.link_status||'')+'" onchange="toggleResCheck('+r.id+')"></td><td>'+r.id+'</td><td class="td-title" title="'+esc(r.title||'')+'" style="display:flex;align-items:center;">'+statusBadge+'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(title)+'</span></td><td><span class="badge badge-d">'+esc(r.source||'-')+'</span></td><td>'+esc(r.type||'-')+'</td><td>'+esc(r.quality||'-')+'</td><td>'+esc(r.year||'-')+'</td><td class="td-url" title="'+esc(r.url||'')+'">'+esc(r.url||'-')+'</td><td class="td-actions"><button class="btn btn-p btn-s" onclick="checkResourceOne('+r.id+', this)">🔍测活</button><button class="btn btn-g btn-s" onclick="editResource('+r.id+')">编辑</button><button class="btn btn-r btn-s" onclick="deleteResource('+r.id+')">删除</button></td></tr>';
+    return '<tr><td><input type="checkbox" class="res-check" data-id="'+r.id+'" onchange="toggleResCheck('+r.id+')"></td><td>'+r.id+'</td><td class="td-title" title="'+esc(r.title||'')+'">'+esc(title)+'</td><td><span class="badge badge-d">'+esc(r.source||'-')+'</span></td><td>'+esc(r.type||'-')+'</td><td>'+esc(r.quality||'-')+'</td><td>'+esc(r.year||'-')+'</td><td class="td-url" title="'+esc(r.url||'')+'">'+esc(r.url||'-')+'</td><td class="td-actions"><button class="btn btn-g btn-s" onclick="editResource('+r.id+')">编辑</button><button class="btn btn-r btn-s" onclick="deleteResource('+r.id+')">删除</button></td></tr>';
   }).join(''):'<tr><td colspan="9" class="empty">暂无数据</td></tr>';
   renderPager('resPager',resPage,resTotal,loadResources);
   document.getElementById('resAllCheck').checked=false;
@@ -873,97 +777,7 @@ function toggleAllRes(){
   document.querySelectorAll('.res-check').forEach(cb=>{cb.checked=all; if(all)resSelected.add(parseInt(cb.dataset.id)); else resSelected.delete(parseInt(cb.dataset.id));});
   updateBatchBtn();
 }
-function updateBatchBtn(){
-  const count = resSelected.size;
-  document.getElementById('batchDelBtn').disabled = count === 0;
-  document.getElementById('batchDelBtn').textContent = '批量删除 (' + count + ')';
-  const batchCheckBtn = document.getElementById('batchCheckBtn');
-  if (batchCheckBtn) {
-    batchCheckBtn.disabled = count === 0;
-    batchCheckBtn.textContent = '⚡ 批量测活 (' + count + ')';
-  }
-}
-
-async function batchCheckSelectedResources(){
-  if(!resSelected.size) return;
-  const btn = document.getElementById('batchCheckBtn');
-  let aliveCount = 0, deadCount = 0, skippedCount = 0;
-  const toCheck = [];
-
-  document.querySelectorAll('.res-check').forEach(cb => {
-    const id = parseInt(cb.dataset.id);
-    if (resSelected.has(id)) {
-      if (cb.dataset.status === 'alive') {
-        aliveCount++;
-        skippedCount++;
-      } else {
-        toCheck.push(id);
-      }
-    }
-  });
-
-  if(!toCheck.length) {
-    show(`选中的 ${aliveCount} 条资源均为正常存活状态，已自动跳过测活 ✓`);
-    return;
-  }
-
-  if(btn){ btn.disabled = true; btn.textContent = `测活中 (0/${toCheck.length})…`; }
-  let finished = 0;
-  for(let i=0; i<toCheck.length; i+=3){
-    const batch = toCheck.slice(i, i+3);
-    await Promise.all(batch.map(async id => {
-      try {
-        const r = await api('/api/admin/resources/'+id+'/check', 'POST', {});
-        if(r && (r.link_status === 'alive' || r.status === 'alive')) aliveCount++;
-        else deadCount++;
-      } catch(e){ deadCount++; }
-      finished++;
-      if(btn) btn.textContent = `测活中 (${finished}/${toCheck.length})…`;
-    }));
-  }
-  show(`批量测活完成！存活: ${aliveCount} 条 (跳过已存活 ${skippedCount} 条)，失效: ${deadCount} 条`);
-  loadResources(resPage);
-}
-
-async function checkCurrentPageResources(){
-  const cbs = document.querySelectorAll('.res-check');
-  if(!cbs.length) return;
-  const btn = document.getElementById('pageCheckBtn');
-  
-  let aliveCount = 0, deadCount = 0, skippedCount = 0;
-  const toCheck = [];
-
-  cbs.forEach(cb => {
-    const id = parseInt(cb.dataset.id);
-    if (cb.dataset.status === 'alive') {
-      aliveCount++;
-      skippedCount++;
-    } else if (id) {
-      toCheck.push(id);
-    }
-  });
-
-  if(!toCheck.length) {
-    show(`本页全部 ${aliveCount} 条资源均为正常存活状态，已自动跳过测活 ✓`);
-    return;
-  }
-
-  if(btn){ btn.disabled = true; btn.textContent = `检测中(${toCheck.length}条)…`; }
-  
-  for(let i=0; i<toCheck.length; i+=3){
-    const batch = toCheck.slice(i, i+3);
-    await Promise.all(batch.map(async id => {
-      try {
-        const r = await api('/api/admin/resources/'+id+'/check', 'POST', {});
-        if(r && (r.link_status === 'alive' || r.status === 'alive')) aliveCount++;
-        else deadCount++;
-      } catch(e){ deadCount++; }
-    }));
-  }
-  show(`本页测活完成！存活: ${aliveCount} 条 (跳过已存活 ${skippedCount} 条)，失效: ${deadCount} 条`);
-  if(btn){ btn.disabled = false; btn.textContent = '🔍 本页测活'; }
-  loadResources(resPage);
-}
+function updateBatchBtn(){document.getElementById('batchDelBtn').disabled=resSelected.size===0; document.getElementById('batchDelBtn').textContent='批量删除 ('+resSelected.size+')';}
 
 async function deleteResource(id){
   if(!confirm('确定删除该资源？'))return;
@@ -1056,128 +870,18 @@ async function confirmImport(){
 async function deleteImport(id){const d=await api('/api/admin/import_queue/'+id,'DELETE');if(d.ok){show('已删除');loadImportQueue()}}
 
 // 死链
-
-// ──────────────── 新增：后台全量巡检轮询与单资源测活 ────────────────
-let _bgScanTimer = null;
-
-async function checkResourceOne(id, btn){
-  if(btn){btn.disabled=true; btn.textContent='测活中…';}
-  const r = await api('/api/admin/resources/'+id+'/check', 'POST');
-  if(r && r.ok){
-    const msg = r.link_status==='alive' ? '✅ 链接正常存活' : r.link_status==='dead' ? ('❌ 链接已失效: '+(r.msg||'404')) : '未知状态';
-    show(msg, r.link_status==='dead'?'error':'info');
-    loadResources(resPage);
-  } else {
-    show('测活请求失败', 'error');
-    if(btn){btn.disabled=false; btn.textContent='🔍测活';}
-  }
-}
-
-async function startBgScan(){
-  const source = document.getElementById('dlSourceFilter').value;
-  const r = await api('/api/admin/deadlinks/bg_start', 'POST', {source});
-  if(r && r.ok){
-    show('全量后台巡检已启动！');
-    pollBgScanStatus();
-  } else {
-    show(r?.msg || '启动失败', 'error');
-  }
-}
-
-async function stopBgScan(){
-  const r = await api('/api/admin/deadlinks/bg_stop', 'POST');
-  if(r && r.ok){
-    show('已发送停止信号');
-    pollBgScanStatus();
-  }
-}
-
-async function pollBgScanStatus(){
-  if(_bgScanTimer) clearTimeout(_bgScanTimer);
-  const r = await api('/api/admin/deadlinks/bg_status');
-  if(!r || !r.state) return;
-  const s = r.state;
-  const box = document.getElementById('bgScanProgressBox');
-  const startBtn = document.getElementById('bgStartBtn');
-  const stopBtn = document.getElementById('bgStopBtn');
-
-  if(s.running || s.scanned > 0){
-    if(box) box.style.display = 'block';
-    if(startBtn) startBtn.style.display = s.running ? 'none' : 'inline-block';
-    if(stopBtn) stopBtn.style.display = s.running ? 'inline-block' : 'none';
-    
-    const pct = s.total > 0 ? Math.min(100, Math.round((s.scanned / s.total) * 100)) : 0;
-    if(document.getElementById('bgScanPct')) document.getElementById('bgScanPct').textContent = pct + '%';
-    if(document.getElementById('bgScanBar')) document.getElementById('bgScanBar').style.width = pct + '%';
-    if(document.getElementById('bgScanned')) document.getElementById('bgScanned').textContent = s.scanned + ' / ' + s.total;
-    if(document.getElementById('bgAlive')) document.getElementById('bgAlive').textContent = s.alive;
-    if(document.getElementById('bgDead')) document.getElementById('bgDead').textContent = s.dead;
-    if(document.getElementById('bgElapsed')) document.getElementById('bgElapsed').textContent = s.elapsed_s + 's';
-    if(document.getElementById('bgScanStatusText')) document.getElementById('bgScanStatusText').textContent = s.running ? '🚀 高速并发巡检进行中…' : '✅ 巡检已完成 / 已暂停';
-
-    if(s.running){
-      _bgScanTimer = setTimeout(pollBgScanStatus, 1500);
-    } else {
-      loadDeadlinkStats();
-    }
-  } else {
-    if(box) box.style.display = 'none';
-    if(startBtn) startBtn.style.display = 'inline-block';
-    if(stopBtn) stopBtn.style.display = 'none';
-  }
-}
-
-async function flushSystemCache(){
-  if(!confirm('确定清空全站 Redis 与搜索缓存？')) return;
-  const r = await api('/api/admin/system/flush_cache', 'POST');
-  if(r && r.ok) show('全站缓存已成功清空！');
-  else show('清空缓存失败', 'error');
-}
-
-let deadlinkPage = 1;
-async function loadDeadlinkStats(page = 1){
-  deadlinkPage = page;
-  pollBgScanStatus();
-  const source = document.getElementById('dlSourceFilter')?.value || '';
-  const [unchecked, status, sources] = await Promise.all([
-    api('/api/admin/deadlinks/unchecked_count'),
-    api('/api/admin/resources?per_page=1&link_status=dead' + (source ? '&source=' + encodeURIComponent(source) : '')),
-    api('/api/admin/deadlinks/sources')
-  ]);
-  document.getElementById('dlUnchecked').textContent = fmtN(unchecked?.total || 0);
-  document.getElementById('dlDead').textContent = fmtN(status?.total || 0);
-  const alive = await api('/api/admin/resources?per_page=1&link_status=alive');
-  document.getElementById('dlAlive').textContent = fmtN(alive?.total || 0);
-
-  const sf = document.getElementById('dlSourceFilter');
-  if (sf && sf.options.length <= 1) {
-    sf.innerHTML = '<option value="">全部网盘来源</option>' + (sources?.items || []).map(s => '<option value="' + s.source + '">' + esc(s.source) + ' (' + s.c + ')</option>').join('');
-  }
-  document.getElementById('deadlinkSourceList').innerHTML = (sources?.items || []).map(s => {
-    const c = getSourceColor(s.source);
-    return '<div class="pie-row"><span class="pie-dot" style="background:' + c + '"></span><span class="pie-name">' + esc(s.source) + '</span><span class="pie-count">' + fmtN(s.c) + '</span></div>';
-  }).join('') || '<div class="empty">暂无</div>';
-
-  await loadDeadlinkList(page);
-}
-
-async function loadDeadlinkList(page = 1) {
-  deadlinkPage = page;
-  const source = document.getElementById('dlSourceFilter')?.value || '';
-  const d = await api(`/api/admin/deadlinks/list?page=${page}&per_page=15&status=dead${source ? '&source=' + encodeURIComponent(source) : ''}`);
-  if (!d) return;
-  const items = d.items || [];
-  document.getElementById('dlResultTbl').innerHTML = items.length ? items.map(x => `
-    <tr>
-      <td>${x.id}</td>
-      <td class="td-title" title="${esc(x.title || '')}"><strong>${esc((x.title || '未知').substring(0, 45))}</strong></td>
-      <td><span class="badge badge-d">${esc(x.source || '-')}</span></td>
-      <td class="td-url" title="${esc(x.url || '')}">${esc(x.url || '-')}</td>
-      <td style="font-size:.72rem;color:var(--text-muted);">${(x.last_checked || '').substring(0, 16) || '未记'}</td>
-      <td><button class="btn btn-r btn-s" onclick="deleteResource(${x.id})">删除</button></td>
-    </tr>
-  `).join('') : '<tr><td colspan="6" class="empty">🎉 当前没有任何被标记的失效死链！</td></tr>';
-  renderPager('dlPager', d.page, d.total_pages, loadDeadlinkStats);
+async function loadDeadlinkStats(){
+  const [unchecked,status,sources]=await Promise.all([api('/api/admin/deadlinks/unchecked_count'),api('/api/admin/resources?per_page=1&link_status=dead'),api('/api/admin/deadlinks/sources')]);
+  document.getElementById('dlUnchecked').textContent=fmtN(unchecked?.total||0);
+  document.getElementById('dlDead').textContent=fmtN(status?.total||0);
+  const alive=await api('/api/admin/resources?per_page=1&link_status=alive');
+  document.getElementById('dlAlive').textContent=fmtN(alive?.total||0);
+  const sf=document.getElementById('dlSourceFilter'); sf.innerHTML='<option value="">全部</option>'+(sources?.items||[]).map(s=>'<option value="'+s.source+'">'+esc(s.source)+' ('+s.c+')</option>').join('');
+  document.getElementById('deadlinkSourceList').innerHTML=(sources?.items||[]).map(s=>{
+    const c=getSourceColor(s.source);
+    return '<div class="pie-row"><span class="pie-dot" style="background:'+c+'"></span><span class="pie-name">'+esc(s.source)+'</span><span class="pie-count">'+fmtN(s.c)+'</span></div>';
+  }).join('')||'<div class="empty">暂无</div>';
+  document.getElementById('dlResultWrap').style.display='none';
 }
 async function scanDeadlinks(){
   const source=document.getElementById('dlSourceFilter').value;
@@ -1215,36 +919,10 @@ function _roleLabel(role){
   if(_isAdminRole(role)) return '管理员';
   return '用户';
 }
-function generateRandomPass(inputId) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
-  let pass = '';
-  for (let i = 0; i < 12; i++) {
-    pass += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  const el = document.getElementById(inputId);
-  if (el) el.value = pass;
-}
-
 async function loadUsers(){
-  const q=(document.getElementById('userSearchInput')?.value||'').trim();
-  const role=(document.getElementById('userRoleFilter')?.value||'').trim();
-  let url='/api/users?per_page=100';
-  if(q) url+=`&q=${encodeURIComponent(q)}`;
-  if(role) url+=`&role=${encodeURIComponent(role)}`;
-  const d=await api(url); if(!d)return;
+  const d=await api('/api/users'); if(!d)return;
   meSuper=!!(d.me&&d.me.is_superadmin);
   meId=d.me&&d.me.user_id||0;
-
-  if (d.stats) {
-    if(document.getElementById('userStatTotal')) document.getElementById('userStatTotal').textContent = fmtN(d.stats.total_users || 0);
-    if(document.getElementById('userStatTodayNew')) document.getElementById('userStatTodayNew').textContent = '+' + fmtN(d.stats.today_new || 0);
-    if(document.getElementById('userStatActive')) document.getElementById('userStatActive').textContent = fmtN(d.stats.today_active || 0);
-    const boundCount = (d.stats.tg_bound || 0) + (d.stats.gh_bound || 0);
-    const totalUsers = d.stats.total_users || 1;
-    const boundPct = Math.round((boundCount / totalUsers) * 100);
-    if(document.getElementById('userStatBound')) document.getElementById('userStatBound').textContent = `${boundPct}% (${d.stats.tg_bound||0}✈️ / ${d.stats.gh_bound||0}🐙)`;
-  }
-
   const sel=document.getElementById('newRole');
   if(sel && meSuper && !sel.querySelector('option[value="superadmin"]')){
     sel.insertAdjacentHTML('beforeend','<option value="superadmin">超级管理员</option>');
@@ -1264,53 +942,39 @@ async function loadUsers(){
     if(self){
       actions='<span style="color:var(--text-muted);font-size:.72rem">当前账号</span>';
     } else if(superU){
+      // 其他超管：不可编辑
       actions='<span style="color:var(--text-muted);font-size:.72rem">超管受保护</span>';
     } else if(admin && !meSuper){
       actions='<span style="color:var(--text-muted);font-size:.72rem">受保护</span>';
     } else if(meSuper){
+      // 超管：完整编辑管理员/普通用户
       actions=`<button class="btn btn-p btn-s" onclick="openEditUser(${u.id})">编辑</button>`
         +`<button class="btn btn-g btn-s" onclick="toggleUser(${u.id},${u.status})">${u.status===1?'禁用':'启用'}</button>`
         +(admin
-          ?`<button class="btn btn-g btn-s" onclick="setUserRole(${u.id},'user')">降权</button>`
-          :`<button class="btn btn-g btn-s" onclick="setUserRole(${u.id},'admin')">提权</button>`)
+          ?`<button class="btn btn-g btn-s" onclick="setUserRole(${u.id},'user')">降为用户</button>`
+          :`<button class="btn btn-g btn-s" onclick="setUserRole(${u.id},'admin')">升为管理员</button>`)
         +`<button class="btn btn-r btn-s" onclick="deleteUser(${u.id})">删除</button>`;
     } else {
-      actions=`<button class="btn btn-p btn-s" onclick="openEditUser(${u.id})">编辑</button>`
-        +`<button class="btn btn-g btn-s" onclick="toggleUser(${u.id},${u.status})">${u.status===1?'禁用':'启用'}</button>`
+      // 普通管理员：只能管普通用户
+      actions=`<button class="btn btn-g btn-s" onclick="toggleUser(${u.id},${u.status})">${u.status===1?'禁用':'启用'}</button>`
         +`<button class="btn btn-r btn-s" onclick="deleteUser(${u.id})">删除</button>`;
     }
-    const tg=u.telegram_id?`<span class="badge" style="background:rgba(42,171,238,0.15);color:#38bdf8;padding:2px 6px;font-size:0.68rem;border:1px solid rgba(42,171,238,0.3);">✈️ ${esc(String(u.telegram_id))}</span>`:'';
-    const gh=u.github_id?`<span class="badge" style="background:rgba(167,139,250,0.15);color:#c084fc;padding:2px 6px;font-size:0.68rem;border:1px solid rgba(167,139,250,0.3);">🐙 ${esc(String(u.github_id))}</span>`:'';
-    const binds=[tg, gh].filter(Boolean).join(' ') || '<span style="color:var(--text-muted);font-size:0.75rem;">未绑定</span>';
-    const emailStr=u.email?`<span style="color:var(--text-primary);font-size:0.8rem">${esc(u.email)}</span>`:'<span style="color:var(--text-muted);font-size:0.75rem">-</span>';
-    const lastLoginStr=u.last_login?`<span style="color:var(--text-primary);font-size:0.72rem;">${u.last_login.substring(0,16)}</span>`:'<span style="color:var(--text-muted);font-size:0.72rem;">未登录</span>';
-
-    return `<tr>
-      <td>${u.id}</td>
-      <td><strong>${esc(u.username)}</strong></td>
-      <td>${emailStr}</td>
-      <td>${binds}</td>
-      <td><span class="badge ${badge}">${_roleLabel(u.role)}</span></td>
-      <td><strong style="color:var(--teal);font-size:.85rem">${u.points||0}</strong></td>
-      <td><span class="badge ${u.status===1?'badge-g':'badge-r'}">${u.status===1?'正常':'禁用'}</span></td>
-      <td>${lastLoginStr}</td>
-      <td style="font-size:.72rem;color:var(--text-muted);">${(u.created_at||'').substring(0,16)}</td>
-      <td class="td-actions">${actions}</td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="10" class="empty">暂无匹配用户</td></tr>';
+    const tg=u.telegram_id?esc(String(u.telegram_id)):'<span style="color:var(--text-muted)">-</span>';
+    return `<tr><td>${u.id}</td><td><strong>${esc(u.username)}</strong><div style="font-size:.68rem;color:var(--text-muted)">TG ${tg}</div></td><td><span class="badge ${badge}">${_roleLabel(u.role)}</span></td><td><span class="badge ${u.status===1?'badge-g':'badge-r'}">${u.status===1?'正常':'禁用'}</span></td><td style="font-size:.72rem">${(u.last_login||'').substring(0,16)}</td><td style="font-size:.72rem">${u.github_id?esc(u.github_id):'<span style="color:var(--text-muted)">未绑定</span>'}</td><td class="td-actions">${actions}</td></tr>`;
+  }).join(''):'<tr><td colspan="7" class="empty">暂无用户</td></tr>';
 }
 function openEditUser(uid){
+  if(!meSuper){show('只有超管可以编辑管理员','error');return;}
   const u=_usersCache.find(x=>Number(x.id)===Number(uid));
   if(!u){show('用户不存在','error');return;}
-  if(_isSuperRole(u.role) && Number(u.id)!==Number(meId) && !meSuper){show('不能编辑超管','error');return;}
+  if(_isSuperRole(u.role) && Number(u.id)!==Number(meId)){show('不能编辑其他超管','error');return;}
   document.getElementById('editUserId').value=u.id;
   document.getElementById('editUserName').value=u.username||'';
   document.getElementById('editUserRole').value=_isSuperRole(u.role)?'superadmin':(_isAdminRole(u.role)?'admin':'user');
   document.getElementById('editUserStatus').value=String(u.status===0?0:1);
-  if(document.getElementById('editUserPoints')) document.getElementById('editUserPoints').value=u.points||0;
   document.getElementById('editUserTg').value=u.telegram_id||'';
   document.getElementById('editUserPass').value='';
-  document.getElementById('editUserTitle').textContent='编辑用户 · '+ (u.username||uid);
+  document.getElementById('editUserTitle').textContent='编辑 · '+ (u.username||uid);
   // 编辑自己时禁止改角色/状态
   const self=Number(u.id)===Number(meId);
   document.getElementById('editUserRole').disabled=self;
@@ -1324,7 +988,6 @@ async function saveUserEdit(){
     username:document.getElementById('editUserName').value.trim(),
     role:document.getElementById('editUserRole').value,
     status:parseInt(document.getElementById('editUserStatus').value,10),
-    points:parseInt(document.getElementById('editUserPoints')?.value||0,10),
     telegram_id:document.getElementById('editUserTg').value.trim(),
   };
   const pw=document.getElementById('editUserPass').value;
@@ -1427,8 +1090,6 @@ async function loadSettings(){
   document.getElementById('setSiteName').value=map.site_name?.value||'';
   document.getElementById('setSearchRetention').value=map.search_log_retention_days?.value||'90';
   document.getElementById('setTmdbKey').value=''; document.getElementById('tmdbHint').textContent=map.tmdb_api_key?.has_value?('已配置 '+map.tmdb_api_key.value_masked):'未配置';
-  document.getElementById('setEnableTgLogin').value=(map.enable_telegram_login?.value==='0')?'0':'1';
-  document.getElementById('setEnableGhLogin').value=(map.enable_github_login?.value==='0')?'0':'1';
   document.getElementById('setTgBotToken').value=''; document.getElementById('setTgBotUsername').value=map.telegram_bot_username?.value||''; document.getElementById('setTgSuperAdmins').value=map.telegram_superadmin_ids?.value||'1562902842'; document.getElementById('setTgRequiredChat').value=map.telegram_required_chat?.value||'@heikuangchangshare';
   const st=document.getElementById('tgLoginStatus'); if(d.telegram_login){const t=d.telegram_login; st.innerHTML=t.enabled?`<span style="color:var(--green)">✓ Telegram 登录已启用</span> · Bot @${t.bot_username||'-'} · 超管 ${(t.superadmin_ids||[]).join(', ')}`:'<span style="color:var(--red)">未启用</span> · 请填写 Bot Token 与用户名并保存';}
 }
@@ -1443,8 +1104,6 @@ async function saveSettings(){
     {key:'site_name',value:document.getElementById('setSiteName').value},
     {key:'tmdb_api_key',value:document.getElementById('setTmdbKey').value},
     {key:'search_log_retention_days',value:document.getElementById('setSearchRetention').value||'90'},
-    {key:'enable_telegram_login',value:document.getElementById('setEnableTgLogin').value},
-    {key:'enable_github_login',value:document.getElementById('setEnableGhLogin').value},
     {key:'telegram_bot_token',value:document.getElementById('setTgBotToken').value},
     {key:'telegram_bot_username',value:document.getElementById('setTgBotUsername').value},
     {key:'telegram_superadmin_ids',value:document.getElementById('setTgSuperAdmins').value||'1562902842'},
@@ -1506,44 +1165,17 @@ async function loadDuplicates(){
   const d=await api('/api/admin/duplicates?by='+by+'&limit=100'); if(!d)return;
   const items=d.items||[];
   document.getElementById('dupTbl').innerHTML=items.length?items.map(x=>{
-    const kv = x.key_val || x.key || '';
     const sources=[...new Set((x.sources||'').split(',').filter(Boolean))].join(', ');
-    return `<tr>
-      <td class="td-title" title="${esc(kv)}"><strong>${esc(kv.substring(0,70))}</strong></td>
-      <td><span class="badge badge-y">${x.cnt} 条</span></td>
-      <td style="font-size:.72rem">${esc(sources)}</td>
-      <td style="font-size:.72rem;color:var(--text-muted)">${esc((x.ids||'').substring(0,80))}</td>
-      <td><button class="btn btn-r btn-s" onclick="cleanSingleGroupDuplicate('${by}', '${esc(kv.replace(/'/g, "\\'"))}')">物理清理组内重复</button></td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="5" class="empty">🎉 暂无重复资源，数据库非常干净！</td></tr>';
+    return `<tr><td class="td-title" title="${esc(x.key||'')}">${esc((x.key||'').substring(0,60))}</td><td><span class="badge badge-y">${x.cnt}</span></td><td style="font-size:.72rem">${esc(sources)}</td><td style="font-size:.72rem">${esc((x.ids||'').substring(0,80))}</td><td><button class="btn btn-r btn-s" onclick="deleteDuplicateIds('${x.ids}')">删除重复</button></td></tr>`;
+  }).join(''):'<tr><td colspan="5" class="empty">无重复资源</td></tr>';
 }
-
-async function cleanSingleGroupDuplicate(by, keyVal){
-  if(!confirm(`确定清除组「${keyVal.slice(0, 30)}」内的重复项？\n系统将自动保留最新 ID，彻底删除多余记录。`)) return;
-  const d = await api('/api/admin/duplicates/clean', 'POST', { by: by, keep: 'newest', key: keyVal });
-  if(d && d.ok){
-    show(`清理成功！已从数据库物理删除 ${d.deleted_count} 条重复资源`);
-    loadDuplicates();
-  } else {
-    show(d?.error || '物理去重失败', 'error');
-  }
-}
-
-async function cleanAllDuplicatesAuto(){
-  const by = document.getElementById('dupBy').value;
-  const byText = by === 'url' ? '相同 URL' : '相同标题与来源';
-  if(!confirm(`⚠️ 高能操作确认：\n确定自动对全库按【${byText}】执行物理去重吗？\n\n系统将只保留最新的 1 条记录，彻底清理删除所有的多余重复记录！`)) return;
-  const el = document.getElementById('dupExtraResult');
-  if(el) el.textContent = '正在执行全库物理去重清理，请稍候…';
-  const d = await api('/api/admin/duplicates/clean', 'POST', { by: by, keep: 'newest' });
-  if(d && d.ok){
-    show(`全库去重成功！已物理彻底删除 ${d.deleted_count} 条重复记录 ✓`);
-    if(el) el.textContent = `全库物理去重完成：累计删除 ${d.deleted_count} 条多余重复记录。`;
-    loadDuplicates();
-  } else {
-    show(d?.error || '去重失败', 'error');
-    if(el) el.textContent = d?.error || '去重失败';
-  }
+async function deleteDuplicateIds(idsStr){
+  const ids=(idsStr||'').split(',').map(x=>parseInt(x)).filter(Boolean);
+  if(ids.length<=1){show('重复组至少需要保留一条','error');return}
+  if(!confirm('该组有 '+ids.length+' 条重复，保留第一条、删除其余？'))return;
+  const toDelete=ids.slice(1);
+  const d=await api('/api/admin/resources/batch','POST',{action:'delete',ids:toDelete});
+  if(d.ok){show('已删除 '+d.affected+' 条重复');loadDuplicates()}else show(d.error||'删除失败','error');
 }
 async function rebuildAggregate(){
   const el=document.getElementById('dupExtraResult');
@@ -1552,30 +1184,6 @@ async function rebuildAggregate(){
   if(!d){if(el)el.textContent='失败';return}
   if(d.ok){show('聚合完成：'+d.groups+' 组'); if(el)el.textContent=`聚合 ${d.groups} 组 / 多源 ${d.multi_source_groups} / 成员 ${d.members_scanned}`;}
   else {show(d.error||'重建失败','error'); if(el)el.textContent=d.error||'失败';}
-}
-async function previewDataClean(){
-  const el=document.getElementById("dupExtraResult");
-  if(el) el.textContent="正在预览数据清洗…";
-  const d=await api("/api/admin/cleaner/preview?limit=10");
-  if(!d){if(el)el.textContent="预览失败";return;}
-  if(el){
-    const s=(d.samples||[]).map(x=>`[#${x.id}] ${x.title?.slice(0,18)}: (${x.old_type||"空"})->(${x.new_type||"不变"})`).join(" | ");
-    el.textContent=`扫描 ${d.scanned} 条，可清洗 ${d.will_update} 条。示例：` + (s||"无");
-  }
-}
-async function runDataClean(){
-  const el=document.getElementById("dupExtraResult");
-  if(!confirm("确认分批执行类型/画质数据清洗？")) return;
-  if(el) el.textContent="正在执行批量清洗…";
-  const d=await api("/api/admin/cleaner/run","POST",{batch_size:1000});
-  if(!d){if(el)el.textContent="清洗失败";return;}
-  if(d.ok){
-    show(`清洗成功：更新了 ${d.updated} 条记录`);
-    if(el) el.textContent=`本次清洗完成：扫描 ${d.scanned} 条，实际更新 ${d.updated} 条 (还有剩余: ${d.has_more ? "是" : "否"})`;
-  } else {
-    show(d.error||"清洗出错","error");
-    if(el) el.textContent=d.error||"清洗出错";
-  }
 }
 async function runSubPush(dry){
   const el=document.getElementById('dupExtraResult');
