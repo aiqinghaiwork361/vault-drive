@@ -50,9 +50,18 @@ def run_auto_clean(cur, days: int = 7, limit: int = 5000) -> dict[str, Any]:
     ids = [r["id"] for r in (cur.fetchall() or [])]
     if not ids:
         return {"ok": True, "deleted": 0, "days": days}
-    placeholders = ",".join(["%s"] * len(ids))
-    cur.execute(f"DELETE FROM resources WHERE id IN ({placeholders})", ids)
-    deleted = cur.rowcount
+    deleted = 0
+    for i in range(0, len(ids), 200):
+        batch = ids[i:i + 200]
+        placeholders = ",".join(["%s"] * len(batch))
+        cur.execute(f"DELETE FROM resources WHERE id IN ({placeholders})", batch)
+        deleted += cur.rowcount
+        # 同步清理 favorites/share_links 中的悬空引用
+        for ref_table in ("favorites", "share_links"):
+            try:
+                cur.execute(f"DELETE FROM {ref_table} WHERE resource_id IN ({placeholders})", batch)
+            except Exception:
+                pass  # 表不存在等场景忽略,主删除不受影响
     return {"ok": True, "deleted": deleted, "days": days, "ids_sample": ids[:20]}
 
 

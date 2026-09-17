@@ -378,8 +378,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <div class="form-row" style="margin:0">
             <div class="form-group"><label>来源过滤 (自动跳过磁力)</label><select id="dlSourceFilter" onchange="loadDeadlinkStats()"><option value="">全部网盘来源</option></select></div>
           </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem;color:var(--text-secondary,#94a3b8)">
+            <input type="checkbox" id="dlRescanAlive" checked>
+            复检已标「存活」且超过 <input type="number" id="dlStaleDays" value="3" min="1" max="30" style="width:52px"> 天的链接（抓最近取消分享）
+          </label>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button class="btn btn-p" id="bgStartBtn" onclick="startBgScan()">🚀 启动全量后台巡检</button>
+            <button class="btn btn-p" id="bgStartBtn" onclick="startBgScan()">🚀 启动集群巡检</button>
             <button class="btn btn-r" id="bgStopBtn" onclick="stopBgScan()" style="display:none">⏹️ 停止巡检</button>
             <button class="btn btn-r" onclick="deleteDeadlinks()" id="dlDeleteBtn">🗑️ 物理删除已确认死链</button>
             <button class="btn btn-g" onclick="loadDeadlinkStats()">🔄 刷新数据</button>
@@ -392,10 +396,15 @@ tr:hover td{background:rgba(255,255,255,0.02)}
             <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden">
               <div id="bgScanBar" style="width:0%;height:100%;background:linear-gradient(90deg, #10b981, #00ff9c);transition:width 0.3s"></div>
             </div>
-            <div id="bgScanDetail" style="margin-top:8px;font-size:0.75rem;color:var(--text-secondary, #94a3b8);display:flex;gap:14px">
+            <div id="bgScanDetail" style="margin-top:8px;font-size:0.75rem;color:var(--text-secondary, #94a3b8);display:flex;gap:14px;flex-wrap:wrap">
+              <span>已抽: <b id="bgExtracted" style="color:var(--text, #fff)">0</b></span>
+              <span>待测: <b id="bgQueue">0</b></span>
+              <span>待写: <b id="bgResults">0</b></span>
               <span>已扫: <b id="bgScanned" style="color:var(--text, #fff)">0</b></span>
+              <span>已写库: <b id="bgWritten">0</b></span>
               <span style="color:#10b981">存活: <b id="bgAlive">0</b></span>
               <span style="color:#ef4444">死链: <b id="bgDead">0</b></span>
+              <span>进程: <b id="bgWorkers">0</b></span>
               <span>耗时: <b id="bgElapsed">0s</b></span>
             </div>
           </div>
@@ -856,7 +865,21 @@ async function loadResources(page=1){
   const items=d.items||[];
   document.getElementById('resTbl').innerHTML=items.length?items.map(r=>{
     const title=(r.title||r.note||'').substring(0,60);
-    const statusBadge = r.link_status==='dead' ? '<span class="badge" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">❌失效</span>' : r.link_status==='alive' ? '<span class="badge" style="background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">✅正常</span>' : '<span class="badge" style="background:#64748b;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⏳未测</span>';
+    const lastCheckTime = r.last_checked ? ('上次检测: ' + r.last_checked) : '尚未检测';
+    let statusBadge = '<span class="badge" title="' + lastCheckTime + '" style="background:#475569;color:#94a3b8;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⏳未测</span>';
+    if (r.link_status === 'dead') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">❌失效</span>';
+    } else if (r.link_status === 'alive') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '" style="background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">✅正常</span>';
+    } else if (r.link_status === 'unknown') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '（网盘频控或需验证码，点测活可复验）" style="background:#f59e0b;color:#000;font-weight:600;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⚠️待验</span>';
+    } else if (r.link_status === 'timeout') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '（网络请求超时）" style="background:#ea580c;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⌛超时</span>';
+    } else if (r.link_status === 'skip') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '（磁力/特殊链接无需检测）" style="background:#334155;color:#94a3b8;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">⏭️免测</span>';
+    } else if (r.link_status === 'suspect') {
+      statusBadge = '<span class="badge" title="' + lastCheckTime + '（用户报错存疑，待复检）" style="background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.68rem;margin-right:6px;flex-shrink:0;">❓存疑</span>';
+    }
     return '<tr><td><input type="checkbox" class="res-check" data-id="'+r.id+'" data-status="'+(r.link_status||'')+'" onchange="toggleResCheck('+r.id+')"></td><td>'+r.id+'</td><td class="td-title" title="'+esc(r.title||'')+'" style="display:flex;align-items:center;">'+statusBadge+'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(title)+'</span></td><td><span class="badge badge-d">'+esc(r.source||'-')+'</span></td><td>'+esc(r.type||'-')+'</td><td>'+esc(r.quality||'-')+'</td><td>'+esc(r.year||'-')+'</td><td class="td-url" title="'+esc(r.url||'')+'">'+esc(r.url||'-')+'</td><td class="td-actions"><button class="btn btn-p btn-s" onclick="checkResourceOne('+r.id+', this)">🔍测活</button><button class="btn btn-g btn-s" onclick="editResource('+r.id+')">编辑</button><button class="btn btn-r btn-s" onclick="deleteResource('+r.id+')">删除</button></td></tr>';
   }).join(''):'<tr><td colspan="9" class="empty">暂无数据</td></tr>';
   renderPager('resPager',resPage,resTotal,loadResources);
@@ -1064,8 +1087,8 @@ async function checkResourceOne(id, btn){
   if(btn){btn.disabled=true; btn.textContent='测活中…';}
   const r = await api('/api/admin/resources/'+id+'/check', 'POST');
   if(r && r.ok){
-    const msg = r.link_status==='alive' ? '✅ 链接正常存活' : r.link_status==='dead' ? ('❌ 链接已失效: '+(r.msg||'404')) : '未知状态';
-    show(msg, r.link_status==='dead'?'error':'info');
+    const msg = r.link_status==='alive' ? '✅ 链接正常存活' : r.link_status==='dead' ? ('❌ 链接已失效: '+(r.msg||'404')) : ('⚠️ '+(r.msg||'网盘频控或需验证码'));
+    show(msg, r.link_status==='dead'?'error':(r.link_status==='alive'?'success':'info'));
     loadResources(resPage);
   } else {
     show('测活请求失败', 'error');
@@ -1075,9 +1098,11 @@ async function checkResourceOne(id, btn){
 
 async function startBgScan(){
   const source = document.getElementById('dlSourceFilter').value;
-  const r = await api('/api/admin/deadlinks/bg_start', 'POST', {source});
+  const rescan_alive = !!(document.getElementById('dlRescanAlive')||{}).checked;
+  const stale_days = parseInt((document.getElementById('dlStaleDays')||{}).value || '3', 10) || 3;
+  const r = await api('/api/admin/deadlinks/bg_start', 'POST', {source, rescan_alive, stale_days});
   if(r && r.ok){
-    show('全量后台巡检已启动！');
+    show((r.msg || '集群巡检已启动') + (r.mode ? ` [${r.mode}]` : ''));
     pollBgScanStatus();
   } else {
     show(r?.msg || '启动失败', 'error');
@@ -1100,22 +1125,44 @@ async function pollBgScanStatus(){
   const box = document.getElementById('bgScanProgressBox');
   const startBtn = document.getElementById('bgStartBtn');
   const stopBtn = document.getElementById('bgStopBtn');
+  const qlen = s.jobs || s.queue_len || s.celery_check || 0;
+  const results = s.results || s.celery_write || 0;
+  const workers = s.workers || 0;
+  const busy = !!(s.running || s.extracting || qlen > 0 || results > 0 || (s.pending || 0) > 0);
 
-  if(s.running || s.scanned > 0){
+  if(busy || s.scanned > 0 || s.extracted > 0){
     if(box) box.style.display = 'block';
-    if(startBtn) startBtn.style.display = s.running ? 'none' : 'inline-block';
-    if(stopBtn) stopBtn.style.display = s.running ? 'inline-block' : 'none';
-    
-    const pct = s.total > 0 ? Math.min(100, Math.round((s.scanned / s.total) * 100)) : 0;
+    if(startBtn) startBtn.style.display = busy ? 'none' : 'inline-block';
+    if(stopBtn) stopBtn.style.display = busy ? 'inline-block' : 'none';
+
+    const denom = Math.max(s.total || 0, s.extracted || 0, 1);
+    const written = s.written || 0;
+    const scanned = s.scanned || 0;
+    const pct = Math.min(100, Math.round(scanned / denom * 100));
+    const rate = (s.elapsed_s > 0) ? (scanned / s.elapsed_s).toFixed(1) : '0';
     if(document.getElementById('bgScanPct')) document.getElementById('bgScanPct').textContent = pct + '%';
     if(document.getElementById('bgScanBar')) document.getElementById('bgScanBar').style.width = pct + '%';
-    if(document.getElementById('bgScanned')) document.getElementById('bgScanned').textContent = s.scanned + ' / ' + s.total;
+    if(document.getElementById('bgExtracted')) document.getElementById('bgExtracted').textContent = s.extracted || 0;
+    if(document.getElementById('bgScanned')) document.getElementById('bgScanned').textContent = scanned + ' / ' + (s.total || s.extracted || 0);
+    if(document.getElementById('bgWritten')) document.getElementById('bgWritten').textContent = written;
+    if(document.getElementById('bgResults')) document.getElementById('bgResults').textContent = results;
     if(document.getElementById('bgAlive')) document.getElementById('bgAlive').textContent = s.alive;
     if(document.getElementById('bgDead')) document.getElementById('bgDead').textContent = s.dead;
-    if(document.getElementById('bgElapsed')) document.getElementById('bgElapsed').textContent = s.elapsed_s + 's';
-    if(document.getElementById('bgScanStatusText')) document.getElementById('bgScanStatusText').textContent = s.running ? '🚀 高速并发巡检进行中…' : '✅ 巡检已完成 / 已暂停';
+    if(document.getElementById('bgQueue')) document.getElementById('bgQueue').textContent = qlen;
+    if(document.getElementById('bgWorkers')) document.getElementById('bgWorkers').textContent = workers;
+    if(document.getElementById('bgElapsed')) document.getElementById('bgElapsed').textContent = (s.elapsed_s || 0) + 's · ' + rate + '/s';
+    if(document.getElementById('bgScanStatusText')) {
+      const mode = (r.mode === 'celery' || r.mode === 'cluster' || s.engine === 'celery') ? 'Celery' : '本地';
+      let phase = '巡检';
+      if(s.extracting) phase = '提取入队';
+      else if(qlen > 0) phase = '检测中';
+      else if(results > 0) phase = '写库中';
+      document.getElementById('bgScanStatusText').textContent = busy
+        ? `🚀 ${mode}·${phase}… ${rate}/s`
+        : '✅ 流水线已完成 / 已暂停';
+    }
 
-    if(s.running){
+    if(busy){
       _bgScanTimer = setTimeout(pollBgScanStatus, 1500);
     } else {
       loadDeadlinkStats();

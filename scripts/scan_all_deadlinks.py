@@ -33,13 +33,22 @@ def check_link(url, source=""):
         if "pan.quark.cn" in u or "quark" in source:
             sid = extract_id(url, "quark")
             if sid:
-                r = requests.post("https://drive-pc.quark.cn/1/clouddrive/share/sharepage/token", json={"pwd_id": sid, "passcode": ""}, timeout=3, headers=headers)
+                pwd_match = re.search(r'[?&](?:pwd|passcode|code)=([a-zA-Z0-9]+)', url, re.I)
+                passcode = pwd_match.group(1) if pwd_match else ""
+                r = requests.post("https://drive-pc.quark.cn/1/clouddrive/share/sharepage/token", json={"pwd_id": sid, "passcode": passcode}, timeout=5, headers=headers)
                 if r.status_code == 404:
                     return "dead", "404"
                 if r.status_code == 200:
                     d = r.json() if r.text else {}
-                    if d.get("code") != 0 and d.get("status") not in (0, 200):
-                        return "dead", f"code_{d.get('code')}"
+                    code = d.get("code")
+                    status = d.get("status")
+                    msg = (d.get("message") or d.get("msg") or "")
+                    if code == 0 or status == 200:
+                        return "alive", "200"
+                    elif code == 41008 or "需要提取码" in msg:
+                        return "alive", "200_passcode"
+                    elif code in (41006, 41009) or any(w in msg for w in ["不存在", "已被取消", "被删除", "违规"]):
+                        return "dead", f"code_{code}"
             return "alive", "200"
 
         elif "pan.baidu.com" in u or "baidu" in source:

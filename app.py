@@ -6577,101 +6577,10 @@ def _extract_id(url, source):
 
 
 def _check_single_link(url, source=""):
-    """根据链接URL与网盘类型智能精准检测"""
-    if not url:
-        return "invalid", 0, "空链接"
-    
-    u = url.lower().strip()
-    if u.startswith("magnet:") or u.startswith("ed2k:"):
-        return "skip", 0, "磁力/电驴链接免测"
+    """委托给 services.link_checker（各盘官方/半官方 API）。"""
+    from services.link_checker import check_single_link
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Accept-Encoding": "identity",
-    }
-
-    try:
-        # 1. 夸克网盘 (精准官方 API)
-        if "pan.quark.cn" in u or "quark" in (source or "").lower():
-            share_id = _extract_id(url, "quark")
-            if not share_id:
-                return "unknown", 0, "无法提取夸克分享ID"
-            r = http_requests.post(
-                "https://drive-pc.quark.cn/1/clouddrive/share/sharepage/token",
-                json={"pwd_id": share_id, "passcode": ""},
-                timeout=8,
-                headers=headers,
-            )
-            if r.status_code == 404:
-                return "dead", 404, "夸克分享不存在或已失效"
-            if r.status_code == 200:
-                d = r.json() if r.text else {}
-                if d.get("code") == 0 or d.get("status") == 200:
-                    return "alive", 200, "正常"
-            return "alive", r.status_code, ""
-
-        # 2. 阿里云盘 (精准官方 API)
-        elif "alipan.com" in u or "aliyundrive.com" in u or "ali" in (source or "").lower():
-            share_id = _extract_id(url, "aliyun")
-            if not share_id:
-                return "unknown", 0, "无法提取阿里分享ID"
-            r = http_requests.post(
-                "https://api.aliyundrive.com/adrive/v3/share_link/get_share_by_anonymous",
-                json={"share_id": share_id},
-                timeout=8,
-                headers=headers,
-            )
-            if r.status_code == 404:
-                return "dead", 404, "阿里分享不存在或已被取消"
-            elif r.status_code == 200:
-                return "alive", 200, "正常"
-            return "unknown", r.status_code, ""
-
-        # 3. 百度网盘 (网页特征探测)
-        elif "pan.baidu.com" in u or "baidu" in (source or "").lower():
-            r = http_requests.get(url, timeout=8, headers=headers, allow_redirects=True)
-            if r.status_code == 404:
-                return "dead", 404, "百度页面不存在(404)"
-            body = r.text
-            dead_signals = [
-                "啊哦，你来晚了，分享的文件已经被取消了",
-                "此链接分享内容可能因为涉及侵权",
-                "给您带来的不便敬请谅解",
-                "分享的文件已经失效",
-                "该分享已不存在",
-            ]
-            for sig in dead_signals:
-                if sig in body:
-                    return "dead", 200, f"百度提示:{sig[:10]}"
-            if "请输入提取码" in body or "init?" in r.url or r.status_code == 200:
-                return "alive", 200, "正常"
-            return "unknown", r.status_code, ""
-
-        # 4. 迅雷 / UC / 115 / PikPak / 其他网盘通用探测
-        else:
-            r = http_requests.get(url, timeout=8, allow_redirects=True, headers=headers)
-            if r.status_code == 404:
-                return "dead", 404, "页面不存在(404)"
-            body = r.text[:3000].lower()
-            dead_words = [
-                '已失效', '已过期', '已删除', '文件不存在', '取消分享', '违规', '侵权已处理',
-                '无法访问该分享', '该分享已删除', '该链接已失效', '分享已被取消', '该分享不存在',
-                'expired', 'share has been deleted', 'not found'
-            ]
-            for word in dead_words:
-                if word in body:
-                    return "dead", r.status_code, f"页面提示:{word}"
-            if r.status_code == 200:
-                return "alive", 200, "正常"
-            return "unknown", r.status_code, ""
-
-    except http_requests.exceptions.Timeout:
-        return "timeout", 0, "请求超时"
-    except http_requests.exceptions.ConnectionError:
-        return "dead", 0, "连接失败(域名或网络不可达)"
-    except Exception as e:
-        return "error", 0, str(e)[:50]
+    return check_single_link(url, source)
 
 
 @app.route("/api/admin/deadlinks/scan", methods=["POST"])
@@ -7661,10 +7570,12 @@ _bg_scan_state = {
     "elapsed_s": 0,
     "last_error": "",
     "source_filter": "",
+    "rescan_alive": False,
 }
 _bg_scan_stop_event = threading.Event()
 
-def _bg_scan_worker_thread(source_filter="", batch_size=1000):
+def _bg_scan_worker_thread(source_filter="", batch_size=1000, rescan_alive=False, stale_days=3):
+    """进程内兜底巡检（无独立 worker 容器时使用）。"""
     global _bg_scan_state
     _bg_scan_state["running"] = True
     _bg_scan_state["scanned"] = 0
@@ -7672,6 +7583,7 @@ def _bg_scan_worker_thread(source_filter="", batch_size=1000):
     _bg_scan_state["dead"] = 0
     _bg_scan_state["start_time"] = time.time()
     _bg_scan_state["source_filter"] = source_filter
+    _bg_scan_state["rescan_alive"] = rescan_alive
     _bg_scan_stop_event.clear()
 
     try:
@@ -7683,18 +7595,29 @@ def _bg_scan_worker_thread(source_filter="", batch_size=1000):
         if source_filter:
             conds.append("source = %s")
             params.append(source_filter)
-        conds.append("(last_checked IS NULL OR link_status IS NULL OR link_status = '' OR link_status = 'unknown')")
-        
+        if rescan_alive:
+            conds.append(
+                "(last_checked IS NULL OR link_status IS NULL OR link_status IN ('','unknown','timeout','error','suspect') "
+                "OR (link_status='alive' AND (last_checked IS NULL OR last_checked < DATE_SUB(NOW(), INTERVAL %s DAY))))"
+            )
+            params.append(int(stale_days))
+        else:
+            conds.append("(last_checked IS NULL OR link_status IS NULL OR link_status = '' OR link_status = 'unknown')")
+
         where = " AND ".join(conds)
         cur.execute(f"SELECT COUNT(*) as c FROM resources WHERE {where}", params)
         total_links = cur.fetchone()["c"]
         _bg_scan_state["total"] = total_links
         db.close()
 
+        workers = int(os.environ.get("DEADLINK_THREADS", "25"))
         while not _bg_scan_stop_event.is_set():
             db = get_db()
             cur = db.cursor()
-            cur.execute(f"SELECT id, url, source FROM resources WHERE {where} ORDER BY id DESC LIMIT %s", params + [batch_size])
+            cur.execute(
+                f"SELECT id, url, source FROM resources WHERE {where} ORDER BY id DESC LIMIT %s",
+                params + [batch_size],
+            )
             rows = cur.fetchall()
             db.close()
 
@@ -7710,7 +7633,7 @@ def _bg_scan_worker_thread(source_filter="", batch_size=1000):
                 status, code, msg = _check_single_link(url, src)
                 return rid, status
 
-            with ThreadPoolExecutor(max_workers=25) as executor:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
                 results = list(executor.map(_check_row, rows))
 
             db = get_db()
@@ -7719,7 +7642,10 @@ def _bg_scan_worker_thread(source_filter="", batch_size=1000):
                 if not res:
                     continue
                 rid, status = res
-                cur.execute("UPDATE resources SET link_status=%s, last_checked=NOW() WHERE id=%s", (status, rid))
+                cur.execute(
+                    "UPDATE resources SET link_status=%s, last_checked=NOW() WHERE id=%s",
+                    (status, rid),
+                )
                 _bg_scan_state["scanned"] += 1
                 if status == "dead":
                     _bg_scan_state["dead"] += 1
@@ -7738,30 +7664,108 @@ def _bg_scan_worker_thread(source_filter="", batch_size=1000):
         _bg_scan_state["running"] = False
         _bg_scan_state["elapsed_s"] = int(time.time() - _bg_scan_state["start_time"])
 
+def _cluster_workers_online() -> int:
+    try:
+        from services.celery_app import app as celery_app
+
+        insp = celery_app.control.inspect(timeout=1.0)
+        pings = insp.ping() if insp else None
+        if pings:
+            return len(pings)
+    except Exception:
+        pass
+    try:
+        from services.deadlink_queue import get_state
+
+        return int(get_state().get("workers") or 0)
+    except Exception:
+        return 0
+
 @app.route("/api/admin/deadlinks/bg_start", methods=["POST"])
 @admin_required
 def api_admin_deadlinks_bg_start():
-    if _bg_scan_state["running"]:
-        return jsonify({"ok": False, "msg": "巡检任务已在运行中", "state": _bg_scan_state})
     data = request.get_json() or {}
-    source_filter = data.get("source", "").strip()
-    t = threading.Thread(target=_bg_scan_worker_thread, args=(source_filter,), daemon=True)
+    source_filter = (data.get("source") or "").strip()
+    rescan_alive = bool(data.get("rescan_alive", True))
+    stale_days = int(data.get("stale_days") or 3)
+    force_local = bool(data.get("force_local", False))
+
+    if not force_local:
+        try:
+            from services.deadlink_worker import start_job
+            from services.deadlink_queue import get_state
+            st = get_state()
+            if st.get("running") and (
+                st.get("jobs", 0) > 0
+                or st.get("results", 0) > 0
+                or st.get("pending", 0) > 0
+                or st.get("extracting")
+            ):
+                return jsonify({"ok": False, "msg": "集群流水线任务已在运行中", "state": st, "mode": "cluster"})
+            st = start_job(source_filter=source_filter, rescan_alive=rescan_alive, stale_days=stale_days)
+            online = _cluster_workers_online()
+            tip = (
+                (st.get("msg") or "已投递 Celery 死链任务（Python 消息队列）")
+                + f"；worker 登记={online}。"
+                + (
+                    "请确认 deadlink-celery-extract/check/write 已启动。"
+                    if online <= 0
+                    else "Celery：extract→check→write。"
+                )
+            )
+            return jsonify({"ok": True, "msg": tip, "state": st, "mode": "celery", "workers_online": online})
+        except Exception as e:
+            app.logger.warning("cluster deadlink start failed, fallback local: %s", e)
+
+    if _bg_scan_state["running"]:
+        return jsonify({"ok": False, "msg": "本地巡检任务已在运行中", "state": _bg_scan_state, "mode": "local"})
+    t = threading.Thread(
+        target=_bg_scan_worker_thread,
+        args=(source_filter, 1000, rescan_alive, stale_days),
+        daemon=True,
+    )
     t.start()
-    return jsonify({"ok": True, "msg": "后台全量巡检任务已启动", "state": _bg_scan_state})
+    return jsonify({"ok": True, "msg": "本地线程池巡检已启动（无集群 worker 时的兜底）", "state": _bg_scan_state, "mode": "local"})
 
 @app.route("/api/admin/deadlinks/bg_stop", methods=["POST"])
 @admin_required
 def api_admin_deadlinks_bg_stop():
     _bg_scan_stop_event.set()
     _bg_scan_state["running"] = False
-    return jsonify({"ok": True, "msg": "已发送停止巡检信号", "state": _bg_scan_state})
+    try:
+        from services.deadlink_tasks import stop_job
+        st = stop_job()
+        return jsonify({"ok": True, "msg": "已停止 Celery 死链任务并清空队列", "state": st})
+    except Exception:
+        try:
+            from services.deadlink_queue import request_stop, set_running, get_state
+            request_stop()
+            set_running(False)
+            return jsonify({"ok": True, "msg": "已发送停止信号", "state": get_state()})
+        except Exception:
+            return jsonify({"ok": True, "msg": "已发送停止巡检信号", "state": _bg_scan_state})
 
 @app.route("/api/admin/deadlinks/bg_status")
 @admin_required
 def api_admin_deadlinks_bg_status():
+    try:
+        from services.deadlink_queue import get_state
+        st = get_state()
+        if (
+            st.get("running")
+            or st.get("jobs", 0)
+            or st.get("results", 0)
+            or st.get("queue_len", 0)
+            or st.get("celery_check", 0)
+            or st.get("celery_write", 0)
+            or st.get("workers", 0)
+        ):
+            return jsonify({"ok": True, "state": st, "mode": "celery"})
+    except Exception:
+        pass
     if _bg_scan_state["running"]:
         _bg_scan_state["elapsed_s"] = int(time.time() - _bg_scan_state["start_time"])
-    return jsonify({"ok": True, "state": _bg_scan_state})
+    return jsonify({"ok": True, "state": _bg_scan_state, "mode": "local"})
 
 @app.route("/api/admin/resources/<int:rid>/check", methods=["POST"])
 @admin_required

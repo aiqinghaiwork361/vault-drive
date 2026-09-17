@@ -3114,10 +3114,199 @@ tbody tr:last-child td {
   outline-offset: 3px;
   box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.22);
 }
+
+/* ============================================================
+   SVG 微交互与动效增强 (VaultDrive Micro-Interactions)
+   ============================================================ */
+/* ── 复制按钮成功反馈与对勾描边 ── */
+.btn-copy-success {
+  background: rgba(251, 191, 36, 0.22) !important;
+  border-color: var(--green) !important;
+  color: #fff !important;
+  transform: scale(0.96);
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease, border-color 0.2s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+}
+.svg-check-draw {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.svg-check-path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkStrokeDraw 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes checkStrokeDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── 雷达旋转扫掠与波纹 ── */
+.radar-sweep-group {
+  transform-origin: 16px 16px;
+  animation: radarSweepSpin 1.1s linear infinite;
+}
+@keyframes radarSweepSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.radar-pulse-ring {
+  transform-origin: 16px 16px;
+  animation: radarRingPulse 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+@keyframes radarRingPulse {
+  0% { r: 3px; opacity: 0.9; }
+  100% { r: 13px; opacity: 0; }
+}
+
+/* ── 空状态浮动与声呐波 ── */
+.empty-radar-wrap {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.empty-radar-svg .finder-float {
+  animation: emptyFinderFloat 3.2s ease-in-out infinite alternate;
+  transform-origin: 44px 44px;
+}
+@keyframes emptyFinderFloat {
+  0% { transform: translateY(-3px) rotate(-2deg); }
+  100% { transform: translateY(4px) rotate(3deg); }
+}
+.empty-radar-svg .radar-wave {
+  transform-origin: 44px 44px;
+}
+.empty-radar-svg .wave-1 {
+  animation: wavePulse 2.4s ease-out infinite;
+}
+.empty-radar-svg .wave-2 {
+  animation: wavePulse 2.4s ease-out infinite 0.6s;
+}
+.empty-radar-svg .wave-3 {
+  animation: wavePulse 2.4s ease-out infinite 1.2s;
+}
+@keyframes wavePulse {
+  0% { opacity: 0.15; transform: scale(0.92); }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.15; transform: scale(1.05); }
+}
+.empty-radar-svg .sparkle {
+  animation: sparkleBlink 2s ease-in-out infinite alternate;
+}
+.empty-radar-svg .sp-1 { animation-delay: 0.2s; }
+.empty-radar-svg .sp-2 { animation-delay: 0.7s; }
+.empty-radar-svg .sp-3 { animation-delay: 1.1s; }
+@keyframes sparkleBlink {
+  0% { opacity: 0.2; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1.4); }
+}
+
+/* ── 搜索框激活时放大镜 SVG 微动 ── */
+.home-search-box:focus-within .icon-search,
+.search-global:focus-within .icon-search {
+  transform: scale(1.15) rotate(-6deg);
+  color: var(--green) !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+  filter: drop-shadow(0 0 6px var(--green-glow));
+}
+.icon-search {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.search-btn:hover .icon-search {
+  transform: scale(1.12);
+  color: var(--green);
+}
+
+/* ── 首页大搜索框雷达流光交互 ── */
+.archive-hero .home-search-box {
+  position: relative !important;
+  background: rgba(15, 15, 15, 0.88) !important;
+  border: 1px solid rgba(251, 191, 36, 0.28) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 18px rgba(251, 191, 36, 0.12) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.archive-hero .home-search-box:hover,
+.archive-hero .home-search-box:focus-within {
+  border-color: var(--green) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(251, 191, 36, 0.26) !important;
+}
+.home-radar-beacon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.home-radar-beacon .beacon-scan {
+  transform-origin: 12px 12px;
+  animation: radarSweepSpin 1.4s linear infinite;
+}
+.home-radar-beacon .beacon-pulse {
+  transform-origin: 12px 12px;
+  animation: radarRingPulse 1.8s ease-out infinite;
+}
+
+/* ── 复制浮动气泡与卡片触觉反馈 ── */
+.copy-floating-pill {
+  position: absolute;
+  top: -20px;
+  right: 8px;
+  background: #10b981;
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  animation: floatFadeUp 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 99;
+}
+@keyframes floatFadeUp {
+  0% { opacity: 0; transform: translateY(6px) scale(0.8); }
+  25% { opacity: 1; transform: translateY(-2px) scale(1); }
+  75% { opacity: 1; transform: translateY(-5px) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(0.9); }
+}
+.version-row {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border-left: 2px solid transparent !important;
+}
+.version-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-left-color: var(--green) !important;
+  transform: translateX(4px) !important;
+}
+.search-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+.search-card:hover {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(251, 191, 36, 0.12) !important;
+}
 </style>
 </head>
 
 <body>
+<!-- 全局 SVG 渐变与特效定义 -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true">
+  <defs>
+    <linearGradient id="radarSweepGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--green)" stop-opacity="0"/>
+      <stop offset="100%" stop-color="var(--green)" stop-opacity="0.85"/>
+    </linearGradient>
+  </defs>
+</svg>
 <!-- v20260817: Pure Black Cinema -->
 <canvas id="particleCanvas" style="display:none"></canvas>
 
@@ -3159,8 +3348,17 @@ tbody tr:last-child td {
           <h1 class="home-search-title brand-mark">VaultDrive</h1>
           <div class="hero-feature" id="heroFeature" hidden onclick="searchHeroFeature()" role="button" tabindex="0"></div>
           <div class="home-search-box">
-            <span class="home-search-icon" aria-hidden="true">
-              <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
+            <span class="home-search-icon home-radar-beacon" aria-hidden="true" title="全网雷达探针">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" style="vertical-align:middle;">
+                <circle cx="12" cy="12" r="10" stroke="var(--green)" stroke-width="1.2" opacity="0.25"/>
+                <circle cx="12" cy="12" r="6" stroke="var(--green)" stroke-width="1.2" opacity="0.4"/>
+                <circle class="beacon-pulse" cx="12" cy="12" r="3" stroke="var(--green)" stroke-width="1.4"/>
+                <g class="beacon-scan">
+                  <path d="M 12 12 L 22 12 A 10 10 0 0 0 19.1 4.9 Z" fill="url(#radarSweepGrad)"/>
+                  <line x1="12" y1="12" x2="22" y2="12" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/>
+                </g>
+                <circle cx="12" cy="12" r="2" fill="var(--green)"/>
+              </svg>
             </span>
             <input
               type="text"
@@ -3183,7 +3381,21 @@ tbody tr:last-child td {
     <div class="page" id="page-search">
       <div id="searchResults">
         <div class="empty-state">
-          <div class="empty-icon">⌕</div>
+          <div class="empty-radar-wrap" aria-hidden="true">
+            <svg class="empty-radar-svg" viewBox="0 0 88 88" width="76" height="76" fill="none">
+              <circle class="radar-wave wave-3" cx="44" cy="44" r="38" stroke="var(--green)" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <circle class="radar-wave wave-2" cx="44" cy="44" r="27" stroke="var(--green)" stroke-width="1.4"/>
+              <circle class="radar-wave wave-1" cx="44" cy="44" r="16" stroke="var(--green)" stroke-width="1.6"/>
+              <g class="finder-float">
+                <circle cx="41" cy="41" r="13" stroke="var(--green)" stroke-width="2.5" fill="rgba(251, 191, 36, 0.08)"/>
+                <line x1="51" y1="51" x2="63" y2="63" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="37" cy="37" r="2.2" fill="#ffffff" opacity="0.85"/>
+              </g>
+              <circle class="sparkle sp-1" cx="24" cy="28" r="1.5" fill="var(--green)"/>
+              <circle class="sparkle sp-2" cx="64" cy="26" r="2" fill="var(--green)"/>
+              <circle class="sparkle sp-3" cx="30" cy="62" r="1.8" fill="var(--green)"/>
+            </svg>
+          </div>
           <div class="empty-title">开始检索</div>
           <div class="empty-desc">输入片名，或回首页点一张海报</div>
         </div>
@@ -4421,8 +4633,11 @@ function renderSearchResults(results, total, hasMore) {
                           <span class="version-title" title="${esc(it.title)}">${qTag}${esc(it.title)}</span>
                         </div>
                         <div class="version-actions">
-                          <button type="button" class="btn btn-primary btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url)" style="padding:3px 8px;font-size:0.75rem;">复制</button>
-                          ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')" style="padding:3px 8px;font-size:0.75rem;">打开</button>`}
+                          <button type="button" class="btn btn-primary btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url, this)" style="padding:4px 9px;font-size:0.75rem;display:inline-flex;align-items:center;gap:4px;position:relative;">
+                            <svg class="btn-icon-svg" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M5 2.5 H3.5 A1.5 1.5 0 0 0 2 4 v7"/></svg>
+                            <span>复制</span>
+                          </button>
+                          ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(it.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')" style="padding:4px 8px;font-size:0.75rem;display:inline-flex;align-items:center;gap:3px;"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h4"/><path d="M10 2h4v4"/><path d="m7 9 7-7"/></svg>打开</button>`}
                           <button type="button" class="btn btn-ghost btn-sm btn-report" onclick="event.stopPropagation();reportDeadLink(${Number(it.id)||0}, this)" title="失效报错" style="padding:3px 6px;font-size:0.72rem;">⚠️ 报错</button>
                         </div>
                       </div>`;
@@ -4452,8 +4667,11 @@ function renderSearchResults(results, total, hasMore) {
                 <div class="search-card-title" title="${esc(clean)}">${esc(clean)}</div>
                 ${meta ? `<div class="search-card-meta">${esc(meta)}</div>` : '<div class="search-card-meta">网盘资源</div>'}
                 <div class="search-card-actions">
-                  <button type="button" class="btn btn-primary btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url)">复制链接</button>
-                  ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')">打开</button>`}
+                  <button type="button" class="btn btn-primary btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.url, this)" style="display:inline-flex;align-items:center;gap:5px;position:relative;">
+                    <svg class="btn-icon-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M5 2.5 H3.5 A1.5 1.5 0 0 0 2 4 v7"/></svg>
+                    <span>复制链接</span>
+                  </button>
+                  ${isMagnet ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-url="${esc(r.url || '')}" onclick="event.stopPropagation();if(this.dataset.url) window.open(this.dataset.url,'_blank')" style="display:inline-flex;align-items:center;gap:4px;"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h4"/><path d="M10 2h4v4"/><path d="m7 9 7-7"/></svg>打开</button>`}
                 </div>
               </article>`;
           }).join('')}
@@ -4505,7 +4723,21 @@ function renderSearchResults(results, total, hasMore) {
   } else {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">⌕</div>
+        <div class="empty-radar-wrap" aria-hidden="true">
+          <svg class="empty-radar-svg" viewBox="0 0 88 88" width="76" height="76" fill="none">
+            <circle class="radar-wave wave-3" cx="44" cy="44" r="38" stroke="var(--green)" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <circle class="radar-wave wave-2" cx="44" cy="44" r="27" stroke="var(--green)" stroke-width="1.4"/>
+            <circle class="radar-wave wave-1" cx="44" cy="44" r="16" stroke="var(--green)" stroke-width="1.6"/>
+            <g class="finder-float">
+              <circle cx="41" cy="41" r="13" stroke="var(--green)" stroke-width="2.5" fill="rgba(251, 191, 36, 0.08)"/>
+              <line x1="51" y1="51" x2="63" y2="63" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="37" cy="37" r="2.2" fill="#ffffff" opacity="0.85"/>
+            </g>
+            <circle class="sparkle sp-1" cx="24" cy="28" r="1.5" fill="var(--green)"/>
+            <circle class="sparkle sp-2" cx="64" cy="26" r="2" fill="var(--green)"/>
+            <circle class="sparkle sp-3" cx="30" cy="62" r="1.8" fill="var(--green)"/>
+          </svg>
+        </div>
         <div class="empty-title">没有找到相关资源</div>
         <div class="empty-desc">换个片名试试，或回到首页点一张海报</div>
       </div>`;
@@ -4604,7 +4836,16 @@ function _doSearch(q) {
   container.innerHTML = `
     <div id="searchLoadingAnim" class="search-loading" role="status" aria-live="polite">
       <div class="search-loading-head">
-        <span class="search-loading-spinner" aria-hidden="true"></span>
+        <svg class="radar-spinner-svg" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-4px;flex-shrink:0;">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.18"/>
+          <circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/>
+          <circle class="radar-pulse-ring" cx="16" cy="16" r="3" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+          <g class="radar-sweep-group">
+            <path d="M 16 16 L 30 16 A 14 14 0 0 0 25.9 6.1 Z" fill="url(#radarSweepGrad)"/>
+            <line x1="16" y1="16" x2="30" y2="16" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+          <circle cx="16" cy="16" r="2" fill="var(--green)"/>
+        </svg>
         <span class="search-loading-label">正在检索 <em>${q.replace(/[<>&"']/g, '')}</em></span>
       </div>
       <div class="search-card-grid">${skelRows}</div>
@@ -4831,7 +5072,7 @@ function _updateOnlineStatusBanner(q, total, initialTotal, status, imported) {
   if (status === 'local') {
     statusText = '<span style="color:var(--green)">✓ 库内结果</span>';
   } else if (status === 'running' || (status === 'pending' && initialTotal === 0)) {
-    statusText = '<span class="search-loading-spinner" style="width:12px;height:12px;border-width:1.5px;display:inline-block;vertical-align:-2px"></span> 在线补充中…';
+    statusText = '<svg class="radar-spinner-svg" viewBox="0 0 32 32" width="14" height="14" aria-hidden="true" style="vertical-align:-2px;margin-right:4px;flex-shrink:0;display:inline-block;"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.18"/><circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/><circle class="radar-pulse-ring" cx="16" cy="16" r="3" fill="none" stroke="var(--green)" stroke-width="1.5"/><g class="radar-sweep-group"><path d="M 16 16 L 30 16 A 14 14 0 0 0 25.9 6.1 Z" fill="url(#radarSweepGrad)"/><line x1="16" y1="16" x2="30" y2="16" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/></g><circle cx="16" cy="16" r="2" fill="var(--green)"/></svg> 在线补充中…';
   } else if (status === 'pending') {
     statusText = '<span style="color:var(--text-secondary)">库内检索</span>';
   } else if (status === 'done') {
@@ -4871,7 +5112,7 @@ function _insertOnlineSkeleton(afterIndex) {
   skeleton.innerHTML = `
     <div class="online-loading-divider">
       <span class="online-loading-label">
-        <span class="search-loading-spinner" aria-hidden="true"></span>
+        <svg class="radar-spinner-svg" viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" style="vertical-align:-3px;margin-right:4px;flex-shrink:0;display:inline-block;"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.18"/><circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/><circle class="radar-pulse-ring" cx="16" cy="16" r="3" fill="none" stroke="var(--green)" stroke-width="1.5"/><g class="radar-sweep-group"><path d="M 16 16 L 30 16 A 14 14 0 0 0 25.9 6.1 Z" fill="url(#radarSweepGrad)"/><line x1="16" y1="16" x2="30" y2="16" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"/></g><circle cx="16" cy="16" r="2" fill="var(--green)"/></svg>
         在线补充中…
       </span>
     </div>
@@ -5276,20 +5517,62 @@ function showToast(message, type = 'info', duration = 3000) {
   return toast;
 }
 
-function copyToClipboard(text) {
+function copyToClipboard(text, btn) {
+  if (!btn && window.event) {
+    const evTarget = window.event.target || window.event.srcElement;
+    if (evTarget && evTarget.closest) {
+      btn = evTarget.closest('button');
+    }
+  }
   if (!text) { showToast('没有可复制的链接', 'error'); return; }
-  navigator.clipboard.writeText(text).then(() => {
+
+  const triggerBtnSuccess = (targetBtn) => {
+    if (!targetBtn || targetBtn._copyAnimTimer) return;
+    const origHtml = targetBtn.innerHTML;
+    targetBtn.classList.add('btn-copy-success');
+    targetBtn.innerHTML = `<svg class="svg-check-draw" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="svg-check-path" d="M3.5 10.5 L8 15 L16.5 5"/></svg><span>已复制</span>`;
+    
+    // 浮动上升微气泡
+    const pill = document.createElement('span');
+    pill.className = 'copy-floating-pill';
+    pill.textContent = '已复制 ✓';
+    targetBtn.appendChild(pill);
+    setTimeout(() => pill.remove(), 850);
+
+    targetBtn._copyAnimTimer = setTimeout(() => {
+      targetBtn.innerHTML = origHtml;
+      targetBtn.classList.remove('btn-copy-success');
+      targetBtn._copyAnimTimer = null;
+    }, 1500);
+  };
+
+  const onSuccess = () => {
     showToast('链接已复制到剪贴板', 'success');
-  }).catch(() => {
-    // fallback
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
+    if (btn) triggerBtnSuccess(btn);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+      fallbackCopy(text, onSuccess);
+    });
+  } else {
+    fallbackCopy(text, onSuccess);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
     document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('链接已复制到剪贴板', 'success');
-  });
+    if (cb) cb();
+  } catch (e) {
+    showToast('复制失败，请手动长按复制', 'error');
+  }
+  document.body.removeChild(ta);
 }
 
 
